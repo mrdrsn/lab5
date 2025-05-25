@@ -4,66 +4,59 @@
  */
 package com.mycompany.lab5;
 
-import javax.swing.ImageIcon;
-
 /**
  *
  * @author Мария
  */
-public class Player {
+public class Player extends Entity{
     
-    private int level;
-    private int health;
-    private int maxhealth;
-    private int damage;
-    private int attack;
-    private ImageIcon icon;
+
+    private int points;
+    private int experience;
+    private int win;
+    private int nextexperience;
     
-    public Player(int level, int health, int damage, int attack){
-        this.level = level;
-        this.health = health;
-        this.damage = damage;
-        this.attack = attack;
-        this.maxhealth = health;
-    }
-   
-    public void setLevel(){
-        this.level++;
-    }
-    public void setHealth(int h){
-        this.health += h;
-    }
-    public void setNewHealth(int h){
-        this.health = h;
-    }
-    public void setDamage(int d){
-        this.damage += d;
-    }
-    public void setAttack(int a){
-        this.attack = a;
-    }
-    public void setMaxHealth(int h){
-        this.maxhealth += h;
+    
+    
+    public Player(int level, int health, int  damage, int attack){
+        super (level, health, damage, attack);
+        this.points = 0;
+        this.experience = 0;
+        this.nextexperience = 40;
+        this.win = 0;
     }
     
-    public int getLevel(){
-        return this.level;
+
+    public int getPoints(){
+        return this.points;
     }
-    public int getHealth(){
-        return this.health;
+    public int getExperience(){
+        return this.experience;
     }
-    public int getDamage(){
-        return this.damage;
+    public int getNextExperience(){
+        return this.nextexperience;
     }
-    public int getAttack(){
-        return this.attack;
+    public int getWin(){
+        return this.win;
     }
-    public int getMaxHealth(){
-        return this.maxhealth;
+
+    public void setPoints(int p){
+        this.points += p;
+    }
+    public void setExperience(int e){
+        this.experience += e;
+    }
+    public void setNextExperience(int e){
+        this.nextexperience = e;
+    }
+    public void setWin(){
+        this.win++;
     }
     
+    @Override
     public String getName(){
-        return null;
+        return "You";
     }
+
     
 }

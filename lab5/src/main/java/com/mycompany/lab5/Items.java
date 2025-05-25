@@ -14,15 +14,15 @@ public class Items {
     private int count;
     
     public Items(String n, int c){
-        this.name=n;
-        this.count=c;
+        this.name = n;
+        this.count = c;
     }
     
     public void setName(String s){
-        this.name=s;
+        this.name = s;
     }
     public void setCount(int c){
-        this.count+=c;
+        this.count += c;
     }
     
     public String getName(){
@@ -32,3 +32,4 @@ public class Items {
         return this.count;
     }
 }
+ 

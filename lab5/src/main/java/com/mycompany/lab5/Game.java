@@ -4,7 +4,6 @@
  */
 package com.mycompany.lab5;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,28 +23,28 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class Game {
 
-    CharacterAction action = new CharacterAction();
-    ChangeTexts change = new ChangeTexts();
+//    CharacterAction action = new CharacterAction();
+//    ChangeTexts change = new ChangeTexts();
     Fight fight = new Fight();
     private ArrayList<Result> results = new ArrayList<>();
 
-    public Player NewEnemy(JLabel L1, JLabel L2,
-            JLabel L3, JLabel L4, JProgressBar pr2) {
-        action.setEnemyes();
-        Player enemy = action.ChooseEnemy(L1, L2, L3, L4);
-        action.HP(enemy, pr2);
-        pr2.setMaximum(enemy.getMaxHealth());
-        return enemy;
-    }
+//    public Entity NewEnemy(JLabel L1, JLabel L2,
+//            JLabel L3, JLabel L4, JProgressBar pr2) {
+//        action.setEnemyes();
+//        Entity enemy = action.ChooseEnemy();
+//        action.HP(enemy, pr2);
+//        pr2.setMaximum(enemy.getMaxHealth());
+//        return enemy;
+//    }
     
-    public Human NewHuman(JProgressBar pr1){
-        Human human = new Human (0,80,16,1);
-        action.HP(human, pr1);
+    public Player NewHuman(JProgressBar pr1){
+        Player human = new Player (0,80,16,1);
+//        action.HP(human, pr1);
         pr1.setMaximum(human.getMaxHealth());
         return human;
     }
 
-    public void EndGameTop(Human human, JTextField text, JTable table, String filePath) throws IOException {
+    public void EndGameTop(Player human, JTextField text, JTable table, String filePath) throws IOException {
         results.add(new Result(text.getText(), human.getPoints()));
         results.sort(Comparator.comparing(Result::getPoints).reversed());
         WriteToTable(table);

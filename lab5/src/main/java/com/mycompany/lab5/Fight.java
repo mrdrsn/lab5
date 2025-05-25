@@ -1,177 +1,169 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.lab5;
 
 //ADD IMAGE!!!
 import java.util.ArrayList;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
 
 /**
  *
  * @author Мария
  */
 public class Fight {
-
-    ChangeTexts change = new ChangeTexts();
+    
     int kind_attack[] = {0};
-    int experiences[] = {40, 90, 180, 260, 410};
-    int i = 1; //???
+//    int experiences[] = {40, 90, 180, 260, 410};
+    int i = 1; //??? номер хода (в зависимости от четности нечетности)
     int k = -1; //???
     int stun = 0;
     double v = 0.0;
 
-    public void Move(Player p1, Player p2, JLabel l, JLabel l2) {
+    public void Move(Entity p1, Entity p2) {
         if (stun == 1) {
             p1.setAttack(-1);
         }
         switch (Integer.toString(p1.getAttack()) + Integer.toString(p2.getAttack())) {
-            case "10":
+            case "10" -> {
                 v = Math.random();
                 if (p1 instanceof ShaoKahn & v < 0.15) {
                     p2.setHealth(-(int) (p1.getDamage() * 0.5));
-                    l2.setText("Your block is broken");
+                    System.out.println("Your block is broken");
 
                 } else {
                     p1.setHealth(-(int) (p2.getDamage() * 0.5));
-                    l2.setText(p2.getName() + " counterattacked");
+                    System.out.println(p2.getName() + " counterattacked");
                 }
-                break;
-            case "11":
+            }
+            case "11" -> {
                 p2.setHealth(-p1.getDamage());
-                l2.setText(p1.getName() + " attacked");
-                break;
-            case "00":
+                System.out.println(p1.getName() + " attacked");
+            }
+            case "00" -> {
                 v = Math.random();
                 if (v <= 0.5) {
                     stun = 1;
                 }
-                l2.setText("Both defended themselves");
-                break;
-            case "01":
-                l2.setText(p1.getName() + " didn't attacked");
-                break;
-            case "-10":
-                l.setText(p1.getName() + " was stunned");
+                System.out.println("Both defended themselves");
+            }
+            case "01" -> {
+                System.out.println(p1.getName() + " didn't attacked");
+            }
+            case "-10" -> {
+                System.out.println(p1.getName() + " was stunned");
                 stun = 0;
-                l2.setText(p2.getName() + " didn't attacked");
-                break;
-            case "-11":
+                System.out.println(p2.getName() + " didn't attacked");
+            }
+            case "-11" -> {
                 p1.setHealth(-p2.getDamage());
-                l.setText(p1.getName() + " was stunned");
+                System.out.println(p1.getName() + " was stunned");
                 stun = 0;
-                l2.setText(p2.getName() + " attacked");
-                break;
+                System.out.println(p2.getName() + " attacked");
+            }
         }
     }
 
-    public void Hit(Player human, Player enemy, int a, JLabel label,
-            JLabel label2, JDialog dialog, JLabel label3, CharacterAction action,
-            JProgressBar pr1, JProgressBar pr2, JDialog dialog1,
-            JDialog dialog2, JFrame frame, ArrayList<Result> results,
-            JLabel label4, JLabel label5, JLabel label6, JLabel label7,
-            JLabel label8, Items[] items, JRadioButton rb) {
-        label7.setText("");
+    public void Hit(Player human, Enemy enemy, int a, CharacterAction action, EnemyBehaviorManager behavior,
+            ArrayList<Result> results, Items[] items) {
+//        label7.setText("");
         human.setAttack(a);
 
         if (k < kind_attack.length - 1) {
             k++;
         } else {
-            kind_attack = action.ChooseBehavior(enemy, action);
+            kind_attack = behavior.getBehaviorFor(enemy);
             k = 0;
         }
         enemy.setAttack(kind_attack[k]);
         if (i % 2 == 1) {
-            Move(human, enemy, label7, label8);
+            Move(human, enemy);
         } else {
-            Move(enemy, human, label7, label8);
+            Move(enemy, human);
         }
         i++;
-        change.RoundTexts(human, enemy, label, label2, i, label6);
-        action.HP(human, pr1);
-        action.HP(enemy, pr2);
+        //обновление програсс бара
+//        action.HP(human, pr1);
+//        action.HP(enemy, pr2);
+
+        //применение возрождения
         if (human.getHealth() <= 0 & items[2].getCount() > 0) {
             human.setNewHealth((int) (human.getMaxHealth() * 0.05));
             items[2].setCount(-1);
-            action.HP(human, pr1);
-            label2.setText(human.getHealth() + "/" + human.getMaxHealth());
-            rb.setText(items[2].getName() + ", " + items[2].getCount() + " шт");
-            label7.setText("Вы воскресли");
+//            action.HP(human, pr1);
+            System.out.println(human.getHealth() + "/" + human.getMaxHealth());
+            //обновление количества возрождений
+            System.out.println(items[2].getName() + ", " + items[2].getCount() + " шт");
+            System.out.println("Вы воскресли");
         }
+        //если здоровье одного из игроков достигло 0 или отрицательного значения,то
+        //вызывается метод endRound или endFinalRound
         if (human.getHealth() <= 0 | enemy.getHealth() <= 0) {
-            if (((Human) human).getWin() == 11) {
-                EndFinalRound(((Human) human), action, results, dialog1, dialog2,
-                        frame, label4, label5);
+            if (human.getWin() == 11) {
+                endFinalRound(human, action, results);
             } else {
-                EndRound(human, enemy, dialog, label3, action, items);
+                endRound(human, enemy, action, items);
             }
         }
     }
 
-    public void EndRound(Player human, Player enemy, JDialog dialog, JLabel label,
+    public void endRound(Player human, Enemy enemy,
             CharacterAction action, Items[] items) {
-
-        dialog.setVisible(true);
-        dialog.setBounds(300, 150, 700, 600);
+//        dialog.setVisible(true);
+//        dialog.setBounds(300, 150, 700, 600);
         if (human.getHealth() > 0) {
-            label.setText("You win");
-            ((Human) human).setWin();
-
+            System.out.println("You win");
+//            label.setText("You win");
+            human.setWin();
+            //если это была победа над боссом (поменять на instanceof Boss)
             if (enemy instanceof ShaoKahn) {
-                action.AddItems(38, 23, 8, items);
-                action.AddPointsBoss(((Human) human), action.getEnemyes());
+                action.addItems(38, 23, 8, items);
+//                LevelManager.addBossExperience(human, action.getEnemyes());
             } else {
-                action.AddItems(25, 15, 5, items);
-                action.AddPoints(((Human) human), action.getEnemyes());
+                action.addItems(25, 15, 5, items);
+//                LevelManager.addExperience(human, action.getEnemyes());
             }
         } else {
-            label.setText(enemy.getName() + " win");
+            System.out.println(enemy.getName() + "wins");
+            //label.setText(enemy.getName() + " win");
         }
-
+        
+        //сброс параметров? 
+        
         i = 1;
         k = -1;
         kind_attack = ResetAttack();
 
     }
 
-    public void EndFinalRound(Human human, CharacterAction action,
-            ArrayList<Result> results, JDialog dialog1, JDialog dialog2, JFrame frame,
-            JLabel label1, JLabel label2) {
+    public void endFinalRound(Player human, CharacterAction action,
+            ArrayList<Result> results) {
         String text = "Победа не на вашей стороне";
         if (human.getHealth() > 0) {
             human.setWin();
-            action.AddPoints(human, action.getEnemyes());
+//            LevelManager.addExperience(human, action.getEnemyes());
             text = "Победа на вашей стороне";
         }
         boolean top = false;
         if (results == null) {
             top = true;
         } else {
-            int i = 0;
+            int iLocal = 0;
             for (int j = 0; j < results.size(); j++) {
                 if (human.getPoints() < results.get(j).getPoints()) {
-                    i++;
+                    iLocal++;
                 }
             }
-            if (i < 10) {
+            if (iLocal < 10) {
                 top = true;
             }
         }
-        if (top) {
-            dialog1.setVisible(true);
-            dialog1.setBounds(150, 150, 600, 500);
-            label1.setText(text);
-        } else {
-            dialog2.setVisible(true);
-            dialog2.setBounds(150, 150, 470, 360);
-            label2.setText(text);
-        }
-        frame.dispose();
+//        if (top) {
+//            dialog1.setVisible(true);
+//            dialog1.setBounds(150, 150, 600, 500);
+//            label1.setText(text);
+//        } else {
+//            dialog2.setVisible(true);
+//            dialog2.setBounds(150, 150, 470, 360);
+//            label2.setText(text);
+//        }
+//        frame.dispose();
     }
 
     public int[] ResetAttack() {
@@ -179,22 +171,20 @@ public class Fight {
         return a;
     }
 
-    public Player NewRound(Player human, JLabel label, JProgressBar pr1,
-            JProgressBar pr2, JLabel label2, JLabel text, JLabel label3, CharacterAction action) {
-
-        Player enemy1 = null;
-        if (((Human) human).getWin() == 6 | ((Human) human).getWin() == 11) {
-            enemy1 = action.ChooseBoss(label, label2, text, label3, human.getLevel());
+    public Enemy newRound(Player human, CharacterAction action) {
+        Enemy enemy = null;
+        if (human.getWin() == 6 | human.getWin() == 11) {
+            enemy= action.ChooseBoss(human.getLevel());
         } else {
-            enemy1 = action.ChooseEnemy(label, label2, text, label3);
+            enemy = action.ChooseEnemy();
         }
-        pr1.setMaximum(human.getMaxHealth());
-        pr2.setMaximum(enemy1.getMaxHealth());
+//        pr1.setMaximum(human.getMaxHealth());
+//        pr2.setMaximum(enemy.getMaxHealth());
         human.setNewHealth(human.getMaxHealth());
-        enemy1.setNewHealth(enemy1.getMaxHealth());
-        action.HP(human, pr1);
-        action.HP(enemy1, pr2);
-        return enemy1;
+        enemy.setNewHealth(enemy.getMaxHealth());
+//        action.HP(human, pr1);
+//        action.HP(enemy1, pr2);
+        return enemy;
     }
 
 }
