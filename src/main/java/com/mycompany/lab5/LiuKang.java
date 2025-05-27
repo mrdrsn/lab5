@@ -5,16 +5,17 @@ package com.mycompany.lab5;
  * @author Мария
  */
 public class LiuKang extends Enemy{
+    private final String name = "Лю Кан";
     public LiuKang(){
-        super(1, 70, 20, 1);
+        super(1, 70, 20);
     }
     
-    public LiuKang(int level, int health, int  damage, int attack){
-        super (level, health, damage, attack);
+    public LiuKang(int level, int health, int  damage){
+        super (level, health, damage);
     }
     
     @Override
     public String getName(){
-        return "Liu Kang";
+        return this.name;
     }
 }

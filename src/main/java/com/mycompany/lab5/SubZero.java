@@ -1,15 +1,17 @@
 package com.mycompany.lab5;
 
 public class SubZero extends Enemy{
+    private final String name = "Саб-зиро";
+    
     public SubZero(){
-        super(1, 60, 16, 1);
+        super(1, 60, 16);
     }
-    public SubZero(int level, int health, int damage , int attack){
-        super (level, health, damage, attack);
+    public SubZero(int level, int health, int damage ){
+        super (level, health, damage);
     }
     
     @Override
     public String getName(){
-        return "Sub-Zero";
+        return this.name;
     }
 }

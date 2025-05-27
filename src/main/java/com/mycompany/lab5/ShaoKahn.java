@@ -5,16 +5,18 @@ package com.mycompany.lab5;
  * @author Мария
  */
 public class ShaoKahn extends Enemy {
+    private final String name = "Шао Кан";
+    
     public ShaoKahn(){
-        super(3, 100, 30, 1);
+        super(3, 100, 30);
     }
     
-    public ShaoKahn(int level, int health, int  damage, int attack){
-        super (level, health, damage, attack);
+    public ShaoKahn(int level, int health, int  damage){
+        super (level, health, damage);
     }
     
     @Override
     public String getName(){
-        return "Shao Kahn";
+        return this.name;
     }
 }

@@ -19,11 +19,10 @@ public class Entity {
     private int attack;
     private ImageIcon icon;
     
-    public Entity(int level, int health, int damage, int attack){
+    public Entity(int level, int health, int damage){
         this.level = level;
         this.health = health;
         this.damage = damage;
-        this.attack = attack;
         this.maxhealth = health;
     }
     public boolean isAlive() {

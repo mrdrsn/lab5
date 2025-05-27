@@ -10,7 +10,7 @@ package com.mycompany.lab5;
  */
 public class Player extends Entity{
     
-
+    private String name;
     private int points;
     private int experience;
     private int win;
@@ -18,8 +18,8 @@ public class Player extends Entity{
     
     
     
-    public Player(int level, int health, int  damage, int attack){
-        super (level, health, damage, attack);
+    public Player(){
+        super (0, 80, 16);
         this.points = 0;
         this.experience = 0;
         this.nextexperience = 40;
@@ -52,10 +52,13 @@ public class Player extends Entity{
     public void setWin(){
         this.win++;
     }
+    public void setName(String name){
+        this.name = name;
+    }
     
     @Override
     public String getName(){
-        return "You";
+        return this.name;
     }
 
     

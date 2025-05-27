@@ -5,17 +5,19 @@ package com.mycompany.lab5;
  * @author Мария
  */
 public class Baraka extends Enemy{
+    private final String name = "Барака";
+    
     public Baraka(){
-        super(1, 100, 12, 1);
+        super(1, 100, 12);
     }
     
-    public Baraka(int level, int health, int  damage, int attack){
-        super (level, health, damage, attack);
+    public Baraka(int level, int health, int  damage){
+        super (level, health, damage);
     }
     
     @Override
     public String getName(){
-        return "Baraka";
+        return this.name;
     }
     
 }

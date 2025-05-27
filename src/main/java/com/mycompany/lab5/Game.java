@@ -38,7 +38,7 @@ public class Game {
 //    }
     
     public Player NewHuman(JProgressBar pr1){
-        Player human = new Player (0,80,16,1);
+        Player human = new Player ();
 //        action.HP(human, pr1);
         pr1.setMaximum(human.getMaxHealth());
         return human;

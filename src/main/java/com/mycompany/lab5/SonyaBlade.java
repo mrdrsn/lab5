@@ -5,15 +5,17 @@ package com.mycompany.lab5;
  * @author Мария
  */
 public class SonyaBlade extends Enemy{
+    private final String name = "Соня Блэйд";
+    
     public SonyaBlade(){
-        super(1, 80, 16, 1);
+        super(1, 80, 16);
     }
-    public SonyaBlade (int level, int health, int  damage, int attack){
-        super (level, health, damage, attack);
+    public SonyaBlade (int level, int health, int  damage){
+        super (level, health, damage);
     }
     
     @Override
     public String getName(){
-        return "Sonya Blade";
+        return this.name;
     }
 }
