@@ -1,6 +1,8 @@
 package com.mycompany.lab5;
 
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -17,6 +19,7 @@ public class GUIDemo extends JFrame {
     public CharacterAction action = new CharacterAction();
     public BattleEngine battleEngine = new BattleEngine();
     public EnemyBehaviorManager behaviorManager = new EnemyBehaviorManager();
+    public Enemy firstEnemy = battleEngine.getEnemy();
 
     public GUIDemo() {
         JPanel startPanel = new JPanel();
@@ -46,32 +49,29 @@ public class GUIDemo extends JFrame {
 
         JButton attackButton = new JButton("атака");
         JButton defenseButton = new JButton("защита");
-
+        JButton newGameButton = new JButton("новая игра");
         gamePanel.add(attackButton);
         gamePanel.add(defenseButton);
+        gamePanel.add(newGameButton);
+        
+//        battleEngine.setEnemy();
+//        Enemy firstEnemy = battleEngine.getEnemy();
+//        Enemy firstEnemy = action.getEnemyes()[0];
+//        int[] pattern = behaviorManager.getBehaviorFor(firstEnemy);
+        System.out.println(firstEnemy.getName());
 
-        Enemy firstEnemy = action.getEnemyes()[0];
         attackButton.addActionListener((ActionEvent e) -> {
-            System.out.println(firstEnemy.getName());
-//            int[] pattern = behaviorManager.getBehaviorFor(firstEnemy);
-//            for(int p: pattern){
-//                System.out.print(p + " ");
-//            }
-            System.out.println("");
-            System.out.println("");
-            battleEngine.processAction(human, firstEnemy, 1);
-            System.out.println("Здоровье противника: " + firstEnemy.getHealth() + " из " + firstEnemy.getMaxHealth());
-            System.out.println("Здоровье игрока: " + human.getHealth() + " из " + human.getMaxHealth());
-            System.out.println("");
-            System.out.println("");
+            attackButtonPressed();
         });
         defenseButton.addActionListener((ActionEvent e) -> {
+            defenseButtonPressed();
+        });
+        newGameButton.addActionListener((ActionEvent e) -> {
+            battleEngine.setEnemy();
+            firstEnemy = battleEngine.getEnemy();
+            human.setNewHealth(human.getMaxHealth());
             System.out.println("");
-            System.out.println("");
-            battleEngine.processAction(human, firstEnemy, 0);
-            System.out.println("Здоровье противника: " + firstEnemy.getHealth() + " из " + firstEnemy.getMaxHealth());
-            System.out.println("Здоровье игрока: " + human.getHealth() + " из " + human.getMaxHealth());
-            System.out.println("");
+            System.out.println("Новая игра! Ваш противник - " + firstEnemy.getName());
             System.out.println("");
         });
         gameFrame.setContentPane(gamePanel);
@@ -80,8 +80,29 @@ public class GUIDemo extends JFrame {
 
     }
 
+    private void attackButtonPressed() {
+        System.out.println("");
+        System.out.println("");
+        battleEngine.processAction(human, firstEnemy, 1);
+        System.out.println("Здоровье противника: " + firstEnemy.getHealth() + " из " + firstEnemy.getMaxHealth());
+        System.out.println("Здоровье игрока: " + human.getHealth() + " из " + human.getMaxHealth());
+        System.out.println("");
+        System.out.println("");
+    }
+
+    private void defenseButtonPressed() {
+        System.out.println("");
+        System.out.println("");
+        battleEngine.processAction(human, firstEnemy, 0);
+        System.out.println("Здоровье противника: " + firstEnemy.getHealth() + " из " + firstEnemy.getMaxHealth());
+        System.out.println("Здоровье игрока: " + human.getHealth() + " из " + human.getMaxHealth());
+        System.out.println("");
+        System.out.println("");
+    }
+
     public static void main(String[] args) {
         GUIDemo g = new GUIDemo();
+
     }
 
     private void openDialog() {

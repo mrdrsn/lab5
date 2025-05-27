@@ -17,7 +17,7 @@ package com.mycompany.lab5;
 
         while (!isGameOver(human)) {
             Enemy enemy = chooseNextEnemy(human);
-            BattleLog log = battleEngine.fight(human, enemy);
+//            BattleLog log = battleEngine.fight(human, enemy);
 
             if (human.isAlive()) {
                 levelManager.addExperience(human, characterAction.getEnemyes());
