@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package newpackage;
 
 /**
@@ -14,10 +10,9 @@ import java.awt.*;
 public class FightFrame extends JFrame {
 
     public FightFrame() {
-        // Настройка основного окна
         setTitle("Fight");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 600);
+        setBounds(300, 100, 900, 600);
         setLayout(new BorderLayout());
 
         // Верхняя панель с заголовком
@@ -31,7 +26,6 @@ public class FightFrame extends JFrame {
 
         // Центральная панель
         JPanel centerPanel = new JPanel();
-//        centerPanel.setBackground(Color.ORANGE);
         centerPanel.setLayout(new GridLayout(1, 3));
 
         // Левая панель (противник)
@@ -70,13 +64,12 @@ public class FightFrame extends JFrame {
     // Метод для создания панели с информацией о персонаже
     private JPanel createCharacterPanel(String name, String damageText, String levelText) {
         JPanel characterPanel = new JPanel();
-//        characterPanel.setBackground(Color.red);
         characterPanel.setLayout(new BorderLayout());
 
         // Верхняя часть: индикатор здоровья
         JPanel healthPanel = new JPanel();
         healthPanel.setBackground(Color.red);
-        healthPanel.setPreferredSize(new Dimension(300,25));
+        healthPanel.setPreferredSize(new Dimension(300, 25));
         healthPanel.setLayout(new BorderLayout());
         JProgressBar healthBar = new JProgressBar(0, 80);
         healthBar.setValue(80); // Пример значения
@@ -86,12 +79,12 @@ public class FightFrame extends JFrame {
         characterPanel.add(healthPanel, BorderLayout.NORTH);
 
         // Средняя часть: изображение персонажа
-        JPanel imagePanel = new JPanel();
-        imagePanel.setBackground(Color.BLUE);
-        imagePanel.setLayout(new BorderLayout());
-        JLabel characterImage = new JLabel();
-        characterImage.setIcon(new ImageIcon("character_image.png")); // Заменить на реальное изображение
-        imagePanel.add(characterImage, BorderLayout.CENTER);
+        JPanel imagePanel = new BackgroundPanel("kitana.jpg");
+//        imagePanel.setBackground(Color.BLUE);
+//        imagePanel.setLayout(new BorderLayout());
+//        JLabel characterImage = new JLabel();
+//        characterImage.setIcon(new ImageIcon("kitana.jpg")); // Заменить на реальное изображение
+//        imagePanel.add(characterImage, BorderLayout.CENTER);
         characterPanel.add(imagePanel, BorderLayout.CENTER);
 
         // Нижняя часть: имя и уровень
@@ -108,29 +101,69 @@ public class FightFrame extends JFrame {
     // Метод для создания центральной панели с информацией
     private JPanel createInfoPanel() {
         JPanel infoPanel = new JPanel();
+//        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         
+        JPanel expPanel = new JPanel(new GridLayout(2, 2));
+        expPanel.setPreferredSize(new Dimension(300, 100));
+        
+        JLabel pointsLabel = new JLabel("points");
+        JLabel pointsValue = new JLabel("00");
+        JLabel expLabel = new JLabel("experience");
+        JLabel expValue = new JLabel("00/00");
+        
+        pointsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        pointsValue.setHorizontalAlignment(SwingConstants.CENTER);
+        expLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        expValue.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        expPanel.add(pointsLabel);
+        expPanel.add(expLabel);
+        expPanel.add(pointsValue);
+        expPanel.add(expValue);
+        
+
+        JPanel turnPanel = new JPanel(new GridLayout(4, 1));
+        turnPanel.setPreferredSize(new Dimension(300, 300));
+        JLabel playerActionLabel = new JLabel("Действие игрока");
+        JLabel enemyActionLabel = new JLabel("Действие противника");
+        JLabel turnLabel = new JLabel("Чья очередь");
+        JLabel stunLabel = new JLabel("Информация о стане");
+
+        playerActionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        enemyActionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        stunLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        turnPanel.add(playerActionLabel);
+        turnPanel.add(enemyActionLabel);
+        turnPanel.add(turnLabel);
+        turnPanel.add(stunLabel);
+
+        JPanel blankPanel = new JPanel();
+        blankPanel.setBackground(Color.cyan);
+        blankPanel.setPreferredSize(new Dimension(300,50));
+        
+        infoPanel.add(expPanel);
+        infoPanel.add(blankPanel);
+        infoPanel.add(turnPanel);
 //        infoPanel.setLayout(new GridBagLayout());
 //        GridBagConstraints gbc = new GridBagConstraints();
 //        gbc.insets = new Insets(5, 5, 5, 5);
 //
 //        // Очки
-//        JLabel pointsLabel = new JLabel("points");
 //        gbc.gridx = 0;
 //        gbc.gridy = 0;
 //        infoPanel.add(pointsLabel, gbc);
 //
-//        JLabel pointsValue = new JLabel("00");
 //        gbc.gridx = 1;
 //        gbc.gridy = 0;
 //        infoPanel.add(pointsValue, gbc);
 //
 //        // Опыт
-//        JLabel expLabel = new JLabel("experience");
 //        gbc.gridx = 0;
 //        gbc.gridy = 1;
 //        infoPanel.add(expLabel, gbc);
 //
-//        JLabel expValue = new JLabel("00/00");
 //        gbc.gridx = 1;
 //        gbc.gridy = 1;
 //        infoPanel.add(expValue, gbc);
