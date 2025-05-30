@@ -16,17 +16,30 @@ public class CombatSystem {
     private boolean playerStunned;
     private boolean enemyStunned;
     private final Random random = new Random();
+    private String attackerAction;
+    private String defenderAction;
 
     //Обработка одного хода (атака/защита/пропуск)
+    public boolean isPlayerStunned(){
+        return this.playerStunned;
+    }
+    public boolean isEnemyStunned(){
+        return this.enemyStunned;
+    }
+    
     public BattleResult processMove(Entity attacker, Entity defender, boolean isPlayerTurn) {
-        if ((isPlayerTurn && playerStunned) || (!isPlayerTurn && enemyStunned)) {
-            applyStun(attacker, defender, isPlayerTurn);
-            System.out.println("произошел стан!");
-            return new BattleResult(attacker, defender, 0, false, true, false);
-        }
+
 
         int attackType = attacker.getAttack();
         int defendType = defender.getAttack();
+
+        if (isPlayerTurn && playerStunned) {
+            handlePlayerStunned(attacker, defender, defendType);
+            return new BattleResult(attacker, defender, defendType, false, false, false);
+        } else if (!isPlayerTurn && enemyStunned) {
+            handleEnemyStunned(attacker, defender, defendType);
+            return new BattleResult(attacker, defender, defendType, false, false, false);
+        }
 
         return switch (attackType + "-" + defendType) {
             case "1-0" ->
@@ -34,10 +47,11 @@ public class CombatSystem {
             case "1-1" ->
                 handleBothAttack(attacker, defender);
             case "0-0" ->
-                handleBothDefend(attacker, defender);
+                handleBothDefend(attacker, defender, isPlayerTurn);
             //пока не понятно
             case "0-1" ->
-                handleNoAction(attacker, defender);
+//                handleNoAction(attacker, defender);
+                handleCounterattack(defender, attacker);
             case "-1-0", "-1-1" ->
                 handleStunnedAttack(attacker, defender, isPlayerTurn);
             default ->
@@ -45,16 +59,34 @@ public class CombatSystem {
         };
     }
 
-    private void applyStun(Entity attacker, Entity defender, boolean isPlayerTurn) {
-        if (isPlayerTurn) {
-            playerStunned = false;
-            System.out.println(attacker.getName() + " вышел из оглушения.");
-        } else {
+    private void handleEnemyStunned(Entity attacker, Entity defender, int defendType) { //атакующий - враг и он оглушен, защищается игрок 
+        if (defendType == 1) {
+            int damage = defender.getDamage();
+            attacker.setHealth(-damage);
             enemyStunned = false;
-            System.out.println(attacker.getName() + " был stunned.");
         }
+        enemyStunned = false;
+        System.out.println(attacker.getName() + " вышел из оглушения.");
     }
 
+    private void handlePlayerStunned(Entity attacker, Entity defender, int defendType) {
+        if (defendType == 1) {
+            int damage = defender.getDamage();
+            attacker.setHealth(-damage);
+        }
+        playerStunned = false;
+        System.out.println(attacker.getName() + " вышел из оглушения.");
+    }
+
+//    private void applyStun(Entity attacker, Entity defender, boolean isPlayerTurn) {
+//        if (isPlayerTurn) {
+//            playerStunned = false;
+//            System.out.println(attacker.getName() + " вышел из оглушения.");
+//        } else {
+//            enemyStunned = false;
+//            System.out.println(attacker.getName() + " был оглушен.");
+//        }
+//    }
     private BattleResult handleCounterattack(Entity attacker, Entity defender) {
         int damage;
         boolean isCounterattack = true;
@@ -70,6 +102,9 @@ public class CombatSystem {
             attacker.setHealth(-damage); // урон наносится атакующему
             System.out.println(defender.getName() + " контратаковал " + attacker.getName());
         }
+        BattleResult br = new BattleResult(defender, attacker, damage, isCounterattack, false, false);
+        br.setAttackerAction("ЧЕ СЮДА ВСТАВЛЯТЬ");
+        br.setDefenderAction("ЧЕ СЮДА ВСТАВЛЯТЬ");
 
         return new BattleResult(defender, attacker, damage, isCounterattack, false, false);
     }
@@ -80,13 +115,18 @@ public class CombatSystem {
         return new BattleResult(attacker, defender, damage, false, false, false);
     }
 
-    private BattleResult handleBothDefend(Entity attacker, Entity defender) {
+    private BattleResult handleBothDefend(Entity attacker, Entity defender, boolean isPlayerTurn) {
         if (random.nextBoolean()) {
-            if (attacker instanceof Player) {
-                playerStunned = true;
-            } else {
+            if (isPlayerTurn) {
                 enemyStunned = true;
+            } else {
+                playerStunned = true;
             }
+//            if (attacker instanceof Player) {
+//                playerStunned = true;
+//            } else {
+//                enemyStunned = true;
+//            }
             return new BattleResult(attacker, defender, 0, false, true, false);
         } else {
             return new BattleResult(attacker, defender, 0, false, false, false);

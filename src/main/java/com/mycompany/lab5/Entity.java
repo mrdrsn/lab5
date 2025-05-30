@@ -35,6 +35,9 @@ public class Entity {
     public void setHealth(int h){
         this.health += h;
     }
+    public void setFullHealth(){
+        this.health = this.maxhealth;
+    }
     public void setNewHealth(int h){
         this.health = h;
     }

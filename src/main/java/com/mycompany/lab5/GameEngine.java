@@ -1,15 +1,23 @@
 package com.mycompany.lab5;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * @author nsoko
  */
- public class GameEngine {
-    private final BattleEngine battleEngine = new BattleEngine();
+public class GameEngine {
+
+    private final BattleEngine battleEngine;
     private final LevelManager levelManager = new LevelManager();
 
     // CharacterAction используется как фабрика врагов
     private final CharacterAction characterAction = new CharacterAction();
+
+    public GameEngine(BattleEngine be) {
+        this.battleEngine = be;
+    }
 
     public void startGame(Player human) {
         // Сначала инициализируем список всех возможных врагов
@@ -28,6 +36,33 @@ package com.mycompany.lab5;
                 break;
             }
         }
+    }
+    
+    public void hit(Player player, Enemy enemy, int attackCode){
+        battleEngine.processAction(player, enemy, attackCode);
+    }
+
+    public void startNewRound(Player player, boolean hasPlayerWon) {
+        Enemy lastEnemy = battleEngine.getEnemy();
+        battleEngine.setTurn(false);
+        if (hasPlayerWon) {
+            player.setWin();
+            battleEngine.setEnemy();
+            while (battleEngine.getEnemy().getName() == lastEnemy.getName()) {
+                battleEngine.setEnemy();
+            }
+            //тут еще проверка levelmanager
+            player.setFullHealth();
+            lastEnemy.setFullHealth();
+        } else {
+            player.setFullHealth();
+            lastEnemy.setFullHealth();
+        }
+    }
+
+    public void addWin(Player player) {
+        player.setWin();
+        System.out.println("Текущее число побед игрока: " + player.getWin());
     }
 
     private Enemy chooseNextEnemy(Player human) {

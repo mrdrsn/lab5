@@ -12,15 +12,29 @@ public class BattleEngine {
     private int actionIndex = 0;
     private Enemy enemy = null;
     private int[] enemyPattern = behaviorManager.getBehaviorFor(enemy);
-    private boolean isPlayerTurn = true;
+    private boolean isPlayerTurn = false;
+    private boolean playerStunned = false;
+    private boolean enemyStunned = false;
+    private boolean battleOver = false;
     
     public BattleEngine(){
         setEnemy();
     }
     
+    public void setTurn(boolean playerTurn){
+        this.isPlayerTurn = playerTurn;
+    }
+    
+    public boolean getPlayerTurn(){
+        return this.isPlayerTurn;
+    }
+    public boolean isBatlleOver(){
+        return this.battleOver;
+    }
     public void processAction(Player human, Enemy enemy, int attackCode){
         human.setAttack(attackCode);
-        
+        playerStunned = false;
+        enemyStunned = false;
         //логика перевыбора паттерна поведения
         if (actionIndex > enemyPattern.length - 1){
             actionIndex = 0;
@@ -32,55 +46,36 @@ public class BattleEngine {
         if(isPlayerTurn){
             combat.processMove(human, enemy, isPlayerTurn);
             isPlayerTurn = false;
+            
         } else if(!isPlayerTurn){
             combat.processMove(enemy, human, isPlayerTurn);
             isPlayerTurn = true;
         }
         if(human.getHealth() <= 0 || enemy.getHealth() <= 0){
             System.out.println("игра окончена");
+            this.battleOver = true;
         }
         for(int p: enemyPattern){
             System.out.print(p + " ");
         }
+        if(combat.isPlayerStunned()){
+            this.playerStunned = true;
+        } else if (combat.isEnemyStunned()){
+            this.enemyStunned = true;
+        }
+    }
+    
+
+    public boolean isPlayerStunned(){
+        return this.playerStunned;
+    }
+    public boolean isEnemyStunned(){
+        return this.enemyStunned;
     }
     public Enemy getEnemy(){
         return this.enemy;
     }
     public void setEnemy(){
         this.enemy = enemies.ChooseEnemy();
-//        this.enemy = enemies.getEnemyes()[index];
     }
 }
-
-//    public BattleLog fight(Player human, Enemy enemy) {
-//        BattleLog log = new BattleLog(human, enemy);
-//
-//        int[] enemyPattern = behaviorManager.getBehaviorFor(enemy);
-////        for(int)
-//        int step = 0;
-//
-//        while (!log.isOver()) {
-//            System.out.println(step);
-//            int enemyAttack = enemyPattern[step % enemyPattern.length];
-//            enemy.setAttack(enemyAttack);
-//
-//            // Ход игрока
-//            BattleResult result = combat.processMove(human, enemy, true);
-//            log.addResult(result);
-//            if (enemy.getHealth() <= 0 || human.getHealth() <= 0) {
-//                break;
-//            }
-//
-//            // Ход противника
-//            result = combat.processMove(enemy, human, false);
-//            log.addResult(result);
-//
-//            if (enemy.getHealth() <= 0 || human.getHealth() <= 0) {
-//                break;
-//            }
-//            System.out.println(log);
-//            step++;
-//        }
-//
-//        return log;
-//    }

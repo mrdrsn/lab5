@@ -6,10 +6,19 @@ import javax.swing.JPanel;
 
 
 public class BackgroundPanel extends JPanel {
+    
     private Image backgroundImage;
 //    private String imagePath;
+    public BackgroundPanel(){
+        
+    }
     public BackgroundPanel(String imagePath) {
         backgroundImage = new ImageIcon(getClass().getClassLoader().getResource(imagePath)).getImage();
+    }
+    public void setNewImage(String newPath){
+        backgroundImage = new ImageIcon(getClass().getClassLoader().getResource(newPath)).getImage();
+        revalidate();
+        repaint();
     }
     @Override
     protected void paintComponent(Graphics g) {
