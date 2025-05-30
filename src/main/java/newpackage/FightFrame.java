@@ -1,13 +1,31 @@
 package newpackage;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author nsoko
  */
-import javax.swing.*;
-import java.awt.*;
 
 public class FightFrame extends JFrame {
+    
+    public JButton itemsButton = new JButton("Предметы");
+    public JButton attackButton = new JButton("Атака");
+    public JButton defendButton = new JButton("Защита");
+    
+    
 
     public FightFrame() {
         setTitle("Fight");
@@ -29,14 +47,14 @@ public class FightFrame extends JFrame {
         centerPanel.setLayout(new GridLayout(1, 3));
 
         // Левая панель (противник)
-        JPanel leftPanel = createCharacterPanel("Enemy (type)", "Damage n", "n level");
+        JPanel leftPanel = createCharacterPanel("Kitana", 16, "n level"); //заменить имя на enemy
         leftPanel.setBackground(Color.ORANGE);
         // Центральная панель (информация)
         JPanel middlePanel = createInfoPanel();
         middlePanel.setBackground(Color.CYAN);
 
         // Правая панель (Kitana)
-        JPanel rightPanel = createCharacterPanel("Kitana", "Damage n", "n level");
+        JPanel rightPanel = createCharacterPanel("Kitana", 14, "n level");
         rightPanel.setBackground(Color.RED);
 
         // Добавление панелей в центральную панель
@@ -62,29 +80,31 @@ public class FightFrame extends JFrame {
     }
 
     // Метод для создания панели с информацией о персонаже
-    private JPanel createCharacterPanel(String name, String damageText, String levelText) {
+    private JPanel createCharacterPanel(String name, int damage, String levelText) {
         JPanel characterPanel = new JPanel();
         characterPanel.setLayout(new BorderLayout());
 
         // Верхняя часть: индикатор здоровья
         JPanel healthPanel = new JPanel();
+        
         healthPanel.setBackground(Color.red);
-        healthPanel.setPreferredSize(new Dimension(300, 25));
+        healthPanel.setPreferredSize(new Dimension(300, 45));
         healthPanel.setLayout(new BorderLayout());
+        
         JProgressBar healthBar = new JProgressBar(0, 80);
+        healthBar.setForeground(Color.green);
         healthBar.setValue(80); // Пример значения
-        healthPanel.add(new JLabel("80/80"), BorderLayout.WEST);
+        
+        JLabel healthLabel = new JLabel("80/80");
+        String damageText = "Урон " + Integer.toString(damage);
+        healthPanel.add(healthLabel, BorderLayout.WEST);
         healthPanel.add(healthBar, BorderLayout.CENTER);
         healthPanel.add(new JLabel(damageText), BorderLayout.EAST);
         characterPanel.add(healthPanel, BorderLayout.NORTH);
 
         // Средняя часть: изображение персонажа
-        JPanel imagePanel = new BackgroundPanel("kitana.jpg");
-//        imagePanel.setBackground(Color.BLUE);
-//        imagePanel.setLayout(new BorderLayout());
-//        JLabel characterImage = new JLabel();
-//        characterImage.setIcon(new ImageIcon("kitana.jpg")); // Заменить на реальное изображение
-//        imagePanel.add(characterImage, BorderLayout.CENTER);
+        String imagePath = name + ".jpg";
+        JPanel imagePanel = new BackgroundPanel(imagePath);
         characterPanel.add(imagePanel, BorderLayout.CENTER);
 
         // Нижняя часть: имя и уровень
@@ -101,7 +121,6 @@ public class FightFrame extends JFrame {
     // Метод для создания центральной панели с информацией
     private JPanel createInfoPanel() {
         JPanel infoPanel = new JPanel();
-//        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         
         JPanel expPanel = new JPanel(new GridLayout(2, 2));
         expPanel.setPreferredSize(new Dimension(300, 100));
@@ -146,49 +165,6 @@ public class FightFrame extends JFrame {
         infoPanel.add(expPanel);
         infoPanel.add(blankPanel);
         infoPanel.add(turnPanel);
-//        infoPanel.setLayout(new GridBagLayout());
-//        GridBagConstraints gbc = new GridBagConstraints();
-//        gbc.insets = new Insets(5, 5, 5, 5);
-//
-//        // Очки
-//        gbc.gridx = 0;
-//        gbc.gridy = 0;
-//        infoPanel.add(pointsLabel, gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridy = 0;
-//        infoPanel.add(pointsValue, gbc);
-//
-//        // Опыт
-//        gbc.gridx = 0;
-//        gbc.gridy = 1;
-//        infoPanel.add(expLabel, gbc);
-//
-//        gbc.gridx = 1;
-//        gbc.gridy = 1;
-//        infoPanel.add(expValue, gbc);
-//
-//        // Результат удара
-//        JLabel hitResultLabel = new JLabel("result of hit");
-//        gbc.gridx = 0;
-//        gbc.gridy = 2;
-//        infoPanel.add(hitResultLabel, gbc);
-//
-//        JLabel hitResultValue = new JLabel("");
-//        gbc.gridx = 1;
-//        gbc.gridy = 2;
-//        infoPanel.add(hitResultValue, gbc);
-//
-//        // Ход
-//        JLabel turnLabel = new JLabel("turn");
-//        gbc.gridx = 0;
-//        gbc.gridy = 3;
-//        infoPanel.add(turnLabel, gbc);
-//
-//        JLabel turnValue = new JLabel("stun");
-//        gbc.gridx = 1;
-//        gbc.gridy = 3;
-//        infoPanel.add(turnValue, gbc);
 
         return infoPanel;
     }
