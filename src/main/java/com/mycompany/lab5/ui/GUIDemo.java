@@ -80,13 +80,13 @@ public class GUIDemo extends JFrame {
     private boolean isFirstGame = true;
 
     public GUIDemo() {
-        JPanel startPanel = new JPanel(new BorderLayout());
+        JPanel startPanel = new JPanel(new GridLayout(2, 1));
 
         JButton startGameButton = new JButton("Начать новую игру");
         JButton showTableButton = new JButton("Просмотреть таблицу результатов");
 
-        startPanel.add(startGameButton, BorderLayout.NORTH);
-        startPanel.add(showTableButton, BorderLayout.SOUTH);
+        startPanel.add(startGameButton);
+        startPanel.add(showTableButton);
 
         startGameButton.addActionListener((ActionEvent e) -> {
             chooseNameAndLocation();
@@ -313,7 +313,7 @@ public class GUIDemo extends JFrame {
             playerHealthBar.setValue(0);
             //победа на стороне противника
             endRound(false);
-            repeatLastRound();
+//            repeatLastRound();
         } else {
             playerHealthLabel.setText(human.getHealth() + "/" + human.getMaxHealth());
             playerHealthBar.setValue(human.getHealth());
@@ -324,7 +324,9 @@ public class GUIDemo extends JFrame {
             enemyHealthBar.setValue(0);
             //победа на стороне игрока
             endRound(true);
-            startNewRound();
+            if (!game.getGameOver()) {
+                startNewRound();
+            }
         } else {
             enemyHealthLabel.setText(enemy.getHealth() + "/" + enemy.getMaxHealth());
             enemyHealthBar.setValue(enemy.getHealth());
@@ -339,8 +341,10 @@ public class GUIDemo extends JFrame {
         if (hasWon) {
             JOptionPane.showMessageDialog(this, "Вы победили.");
             game.addWin(human);
+            if (game.getGameOver()) {
+                JOptionPane.showMessageDialog(this, "Игра окончена");
+            }
         } else {
-            // Автоматическое использование креста возрождения
             ItemManager itemManager = game.getItemManager();
             Items revivalCross = null;
 
@@ -351,20 +355,18 @@ public class GUIDemo extends JFrame {
                 }
             }
 
-            if (revivalCross != null) {
+            if (revivalCross.getCount() != 0) {
                 itemManager.useItem(revivalCross, human);
                 JOptionPane.showMessageDialog(this, "Вы были мертвы, но крест возрождения восстановил вам 5% здоровья!");
-                human.healToRevive(); // Например, 5% от maxHealth
+                human.healToRevive();
+                attackButton.setEnabled(true);
+                defendButton.setEnabled(true);
+                itemsButton.setEnabled(true);
+                updateEntityPanel();
+            } else {
                 repeatLastRound(); // Возобновляем раунд
-                return;
+                JOptionPane.showMessageDialog(this, "Вы проиграли.");
             }
-
-            // Если нет креста — показываем сообщение о проигрыше
-            JOptionPane.showMessageDialog(this, "Вы проиграли.");
-            JOptionPane.showMessageDialog(this, "Вы проиграли.");
-        }
-        if (game.getGameOver()) {
-            JOptionPane.showMessageDialog(this, "Игра окончена");
         }
         if (game.isNewLevel()) {
             showLevelUpDialog();
@@ -571,8 +573,11 @@ public class GUIDemo extends JFrame {
         enemyDamageLabel.setText("Урон " + enemy.getDamage());
         enemyLevelLabel.setText(enemy.getLevel() + " уровень");
         enemyNameLabel.setText(enemy.getName());
-
-        playerHealthLabel.setText(human.getHealth() + "/" + human.getMaxHealth());
+        if (human.getHealth() >= 0) {
+            playerHealthLabel.setText(human.getHealth() + "/" + human.getMaxHealth());
+        } else {
+            playerHealthLabel.setText("0/" + human.getMaxHealth());
+        }
         playerHealthBar.setMaximum(human.getMaxHealth());
         playerHealthBar.setValue(human.getHealth());
 

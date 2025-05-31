@@ -62,7 +62,7 @@ public class LevelManager {
         checkLevelUp(human, enemies);
     }
 
-    private void checkLevelUp(Player human, Entity[] enemies) {
+    public void checkLevelUp(Player human, Entity[] enemies) {
         for (int i = 0; i < experience_for_next_level.length - 1; i++) {
             if (experience_for_next_level[i] == human.getExperience()) {
                 reachedNewLevel = true;

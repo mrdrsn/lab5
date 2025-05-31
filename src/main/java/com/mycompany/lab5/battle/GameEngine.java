@@ -16,7 +16,6 @@ public class GameEngine {
     private final BattleEngine battleEngine;
     private final LevelManager levelManager = new LevelManager();
     private final ItemManager itemManager = new ItemManager();
-    // CharacterAction используется как фабрика врагов
     private final CharacterAction characterAction = new CharacterAction();
 
     private Enemy[] enemies = characterAction.getEnemies();
@@ -55,12 +54,13 @@ public class GameEngine {
                 enemies[2] = characterAction.getEnemies()[4]; //босс
             }
             case (2) -> {
-                enemies = new Enemy[5];
+                enemies = new Enemy[6];
                 enemies[0] = characterAction.getEnemies()[0];
-                enemies[1] = characterAction.getEnemies()[4]; //босс
-                enemies[2] = characterAction.getEnemies()[1];
+                enemies[1] = characterAction.getEnemies()[1];
+                enemies[2] = characterAction.getEnemies()[4]; //босс
                 enemies[3] = characterAction.getEnemies()[2];
-                enemies[4] = characterAction.getEnemies()[5]; //босс
+                enemies[4] = characterAction.getEnemies()[3];
+                enemies[5] = characterAction.getEnemies()[5]; //босс
             }
             case (3) -> {
                 enemies = new Enemy[3];
@@ -145,24 +145,4 @@ public class GameEngine {
         return this.isGameOver;
     }
 
-//    private Enemy chooseNextEnemy(Player human) {
-//        int winCount = human.getWin();
-//
-//        // Проверяем, нужен ли босс
-//        if (winCount == 6 || winCount == 11) {
-//            return characterAction.ChooseBoss(human.getLevel());
-//        } else {
-//            return characterAction.ChooseEnemy();
-//        }
-//    }
-//
-//    private boolean isGameOver(Player human) {
-//        return !human.isAlive() || human.getWin() == 11;
-//    }
-//
-//    private void checkForRevive(Player human) {
-//        // Здесь можно добавить логику использования креста возрождения
-//        // например:
-//        // itemManager.tryAutoRevive(human);
-//    }
 }

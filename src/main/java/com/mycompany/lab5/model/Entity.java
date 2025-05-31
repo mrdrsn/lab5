@@ -95,7 +95,7 @@ public class Entity {
     }
 
     public void healToRevive() {
-        this.health = this.maxhealth / 20; // 5%
+        setHealth((int) (this.maxhealth*0.05)); // 5%
     }
 
     public String getName() {

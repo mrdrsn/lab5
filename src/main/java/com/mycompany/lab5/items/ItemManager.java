@@ -21,7 +21,7 @@ public class ItemManager {
     public void addRandomItem() {
         int chance = random.nextInt(100); // 0-99
 
-        if (chance < 5) { // 5% - крест возрождения
+        if (chance < 100) { // 5% - крест возрождения
             addItem(new Items("Крест возрождения", 1));
         } else if (chance < 20) { // 15% (от 5 до 20) - большое зелье лечения
             addItem(new Items("Большое зелье лечения", 1));
@@ -61,7 +61,6 @@ public class ItemManager {
                     return true;
                 }
                 case "Крест возрождения" -> {
-                    // Используется автоматически при смерти
                     item.setCount(-1);
                     return true;
                 }
