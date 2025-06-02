@@ -10,7 +10,6 @@ public class BattleEngine {
     
     private final CombatSystem combat = new CombatSystem();
     private final EnemyBehaviorManager behaviorManager = new EnemyBehaviorManager();
-//    private final ItemManager itemManager = new ItemManager();
     private int actionIndex = 0;
     private Enemy enemy = null;
     private int[] enemyPattern = behaviorManager.getBehaviorFor(enemy);

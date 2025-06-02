@@ -13,8 +13,6 @@ import com.mycompany.lab5.model.Entity;
 public class BattleResult {
     private final Entity attacker;
     private final Entity defender;
-    private String attackerAction;
-    private String defenderAction;
     private final boolean isCounterattack;
     private final boolean isStunned;
     private final int damage;
@@ -27,12 +25,6 @@ public class BattleResult {
         this.isCounterattack = isCounterattack;
         this.isStunned = isStunned;
         this.roundOver = roundOver;
-    }
-    public void setAttackerAction(String action){
-        this.attackerAction = action;
-    }
-    public void setDefenderAction(String action){
-        this.defenderAction = action;
     }
     // Getters
     public Entity getAttacker() { return attacker; }

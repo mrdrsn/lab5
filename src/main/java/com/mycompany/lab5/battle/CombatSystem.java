@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.lab5.battle;
 
 import com.mycompany.lab5.model.Entity;
@@ -14,14 +10,12 @@ import java.util.Random;
  *
  * @author nsoko
  */
-//Отвечает за то, что происход  ит при взаимодействии двух участников (игрок vs враг) в одном ходе. 
+//Отвечает за то, что происходит при взаимодействии двух участников (игрок vs враг) в одном ходе. 
 public class CombatSystem {
 
     private boolean playerStunned;
     private boolean enemyStunned;
     private final Random random = new Random();
-    private String attackerAction;
-    private String defenderAction;
 
     //Обработка одного хода (атака/защита/пропуск)
     public boolean isPlayerStunned(){
@@ -106,9 +100,6 @@ public class CombatSystem {
             attacker.setHealth(-damage); // урон наносится атакующему
             System.out.println(defender.getName() + " контратаковал " + attacker.getName());
         }
-        BattleResult br = new BattleResult(defender, attacker, damage, isCounterattack, false, false);
-        br.setAttackerAction("ЧЕ СЮДА ВСТАВЛЯТЬ");
-        br.setDefenderAction("ЧЕ СЮДА ВСТАВЛЯТЬ");
 
         return new BattleResult(defender, attacker, damage, isCounterattack, false, false);
     }
