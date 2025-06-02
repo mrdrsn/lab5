@@ -32,6 +32,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import com.mycompany.lab5.ui.BackgroundPanel;
+import javax.swing.BoxLayout;
 
 /**
  *
@@ -40,15 +41,15 @@ import com.mycompany.lab5.ui.BackgroundPanel;
 public class GUIDemo extends JFrame {
 
     public Player human = new Player();
-    public BattleEngine battleEngine = new BattleEngine();
-    public GameEngine game = new GameEngine(battleEngine);
     public Enemy enemy = null;
+    public GameEngine game;
 
     private JPanel centerPanel;
-    private JButton attackButton;
-    private JButton defendButton;
-    private JButton itemsButton;
-    private JButton debuffButton;
+
+    private JButton attackButton = new JButton("Атаковать"); //основные кнопки
+    private JButton defendButton = new JButton("Защититься"); //основные кнопки
+    private JButton itemsButton = new JButton("Предметы"); //основные кнопки
+    private JButton debuffButton = new JButton("Ослабить"); //основные кнопки
 
     private JLabel playerNameLabel;
     private JLabel enemyNameLabel;
@@ -77,7 +78,7 @@ public class GUIDemo extends JFrame {
     private JLabel counterattackLabel;
     private JLabel stunLabel;
 
-    private boolean isFirstGame = true;
+    private GUIHelper creator = new GUIHelper(this);
 
     public GUIDemo() {
         JPanel startPanel = new JPanel(new GridLayout(2, 1));
@@ -142,7 +143,7 @@ public class GUIDemo extends JFrame {
                 JOptionPane.showMessageDialog(inputDialog, "Имя не может быть пустым!", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            game.setLocationNumber(selected);
+            game = new GameEngine(selected);
             human.setName(enteredName);
             playerName[0] = enteredName;
             selectedLocations[0] = selected;
@@ -160,33 +161,28 @@ public class GUIDemo extends JFrame {
     private void startGame() {
         JFrame gameFrame = new JFrame();
         gameFrame.setLayout(new BorderLayout());
-        enemy = game.getEnemy(0);
-        JPanel topPanel = createTopPanel();
-        centerPanel = createCenterPanel(enemy, human);
-        JPanel bottomPanel = createBottomPanel();
+        enemy = game.getFirstEnemy();
+        JPanel topPanel = creator.createTopPanel();
+        centerPanel = creator.createCenterPanel(enemy, human);
+        JPanel bottomPanel = creator.createBottomPanel();
 
-        attackButton.addActionListener((ActionEvent e) -> {
-            manageStunInfo();
-            game.hit(human, enemy, 1);
-            appendOther(isFirstGame);
-            updatePanelsAfterMove();
-            updateInfoAfterMove(1, enemy.getAttack(), battleEngine);
-        });
-        defendButton.addActionListener((ActionEvent e) -> {
-            manageStunInfo();
-            game.hit(human, enemy, 0);
-            appendOther(isFirstGame);
-            updatePanelsAfterMove();
-            updateInfoAfterMove(0, enemy.getAttack(), battleEngine);
-        });
         itemsButton.addActionListener((ActionEvent e) -> {
             openItemsWindow();
         });
+        attackButton.addActionListener((ActionEvent e) -> {
+            game.hit(human, enemy, 1);
+            updatePanelsAfterMove();
+            updateInfoAfterMove(1, enemy.getAttack());
+        });
+        defendButton.addActionListener((ActionEvent e) -> {
+            game.hit(human, enemy, 0);
+            updatePanelsAfterMove();
+            updateInfoAfterMove(0, enemy.getAttack());
+        });
         debuffButton.addActionListener((ActionEvent e) -> {
-            manageStunInfo();
             game.hit(human, enemy, 2); // 2 - действие ослабления
             updatePanelsAfterMove();
-            updateInfoAfterMove(2, enemy.getAttack(), battleEngine);
+            updateInfoAfterMove(2, enemy.getAttack());
             System.out.println("Игрок попытался ослабить врага");
         });
 
@@ -199,177 +195,62 @@ public class GUIDemo extends JFrame {
         gameFrame.setVisible(true);
     }
 
-    private JPanel createCharacterPanel(Entity entity) {
-        JPanel characterPanel = new JPanel();
-        characterPanel.setLayout(new BorderLayout());
-
-        JPanel healthPanel = new JPanel(new BorderLayout());
-        healthPanel.setPreferredSize(new Dimension(300, 45));
-        JProgressBar healthBar = new JProgressBar(0, entity.getMaxHealth());
-        healthBar.setForeground(Color.green);
-        healthBar.setValue(entity.getHealth());
-
-        JLabel healthLabel = new JLabel(entity.getHealth() + "/" + entity.getMaxHealth());
-        JLabel damageLabel = new JLabel("Урон " + entity.getDamage());
-
-        healthPanel.add(healthLabel, BorderLayout.WEST);
-        healthPanel.add(healthBar, BorderLayout.CENTER);
-        healthPanel.add(damageLabel, BorderLayout.EAST);
-
-        if (entity.equals(human)) {
-            playerHealthBar = healthBar;
-            playerHealthLabel = healthLabel;
-            playerDamageLabel = damageLabel;
-            playerNameLabel = new JLabel(entity.getName());
-            playerLevelLabel = new JLabel(entity.getLevel() + " уровень");
-            playerImagePanel = new BackgroundPanel("Китана.jpg");
-
-        } else {
-            enemyHealthBar = healthBar;
-            enemyHealthLabel = healthLabel;
-            enemyDamageLabel = damageLabel;
-            enemyNameLabel = new JLabel(entity.getName());
-            enemyLevelLabel = new JLabel(entity.getLevel() + " уровень");
-            enemyImagePanel = new BackgroundPanel(entity.getName() + ".jpg");
-        }
-
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        infoPanel.setBackground(Color.YELLOW);
-        JLabel nameLabel = entity.equals(human) ? playerNameLabel : enemyNameLabel;
-        JLabel levelLabel = entity.equals(human) ? playerLevelLabel : enemyLevelLabel;
-        infoPanel.add(nameLabel);
-        infoPanel.add(levelLabel);
-
-        JPanel imagePanel = entity.equals(human) ? playerImagePanel : enemyImagePanel;
-        characterPanel.add(healthPanel, BorderLayout.NORTH);
-        characterPanel.add(imagePanel, BorderLayout.CENTER);
-        characterPanel.add(infoPanel, BorderLayout.SOUTH);
-        System.out.println(imagePanel.getSize());
-
-        return characterPanel;
-    }
-
-    private JPanel createInfoPanel() {
-        JPanel infoPanel = new JPanel();
-        JPanel expPanel = new JPanel(new GridLayout(2, 2));
-        expPanel.setPreferredSize(new Dimension(300, 100));
-
-        JLabel pointsLabel = new JLabel("points");
-        pointsValue = new JLabel("00");
-        JLabel expLabel = new JLabel("experience");
-        expValue = new JLabel("00/40");
-
-        pointsLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        pointsValue.setHorizontalAlignment(SwingConstants.CENTER);
-        expLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        expValue.setHorizontalAlignment(SwingConstants.CENTER);
-
-        expPanel.add(pointsLabel);
-        expPanel.add(expLabel);
-        expPanel.add(pointsValue);
-        expPanel.add(expValue);
-
-        turnPanel = new JPanel(new GridLayout(5, 1));
-        turnPanel.setPreferredSize(new Dimension(300, 300));
-        turnPanel.setBackground(Color.red);
-        JLabel playerAction = new JLabel("");
-        JLabel enemyAction = new JLabel("");
-        JLabel turn = new JLabel("Ход противника");
-        JLabel counterattack = new JLabel("");
-        JLabel stun = new JLabel("");
-
-        playerActionLabel = playerAction;
-        enemyActionLabel = enemyAction;
-        turnLabel = turn;
-        counterattackLabel = counterattack;
-        stunLabel = stun;
-
-        playerAction.setHorizontalAlignment(SwingConstants.CENTER);
-        enemyAction.setHorizontalAlignment(SwingConstants.CENTER);
-        turn.setHorizontalAlignment(SwingConstants.CENTER);
-        counterattack.setHorizontalAlignment(SwingConstants.CENTER);
-        stun.setHorizontalAlignment(SwingConstants.CENTER);
-
-        turnPanel.add(turn);
-        turnPanel.add(playerAction);
-        turnPanel.add(enemyAction);
-        turnPanel.add(counterattack);
-        turnPanel.add(stun);
-
-        JPanel blankPanel = new JPanel();
-        blankPanel.setBackground(Color.cyan);
-        blankPanel.setPreferredSize(new Dimension(300, 50));
-
-        infoPanel.add(expPanel);
-        infoPanel.add(blankPanel);
-        infoPanel.add(turnPanel);
-
-        return infoPanel;
-    }
-
     private void updatePanelsAfterMove() {
+        playerActionLabel.setVisible(true);
+        enemyActionLabel.setVisible(true);
+        stunLabel.setVisible(true);
+        counterattackLabel.setVisible(true);
+
+        updateEntityPanel();
         if (human.getHealth() <= 0) {
-            playerHealthLabel.setText("0/" + human.getMaxHealth());
-            playerHealthBar.setValue(0);
-            //победа на стороне противника
-            endRound(false);
-//            repeatLastRound();
-        } else {
-            playerHealthLabel.setText(human.getHealth() + "/" + human.getMaxHealth());
-            playerHealthBar.setValue(human.getHealth());
+            human.setNewHealth(0);
+            handleLoss();
         }
-
         if (enemy.getHealth() <= 0) {
-            enemyHealthLabel.setText("0/" + enemy.getMaxHealth());
-            enemyHealthBar.setValue(0);
-            //победа на стороне игрока
-            endRound(true);
-            if (!game.getGameOver()) {
-                startNewRound();
-            }
-        } else {
-            enemyHealthLabel.setText(enemy.getHealth() + "/" + enemy.getMaxHealth());
-            enemyHealthBar.setValue(enemy.getHealth());
+            enemy.setNewHealth(0);
+            handleWin();
         }
-
     }
 
-    private void endRound(boolean hasWon) {
+    private void handleLoss() {
         attackButton.setEnabled(false);
         defendButton.setEnabled(false);
         itemsButton.setEnabled(false);
-        if (hasWon) {
-            JOptionPane.showMessageDialog(this, "Вы победили.");
-            game.addWin(human);
-            if (game.getGameOver()) {
-                JOptionPane.showMessageDialog(this, "Игра окончена");
-            }
-        } else {
-            ItemManager itemManager = game.getItemManager();
-            Items revivalCross = null;
-
-            for (Items item : itemManager.getItemsList()) {
-                if (item.getName().equals("Крест возрождения")) {
-                    revivalCross = item;
-                    break;
-                }
-            }
-
-            if (revivalCross.getCount() != 0) {
-                itemManager.useItem(revivalCross, human);
-                JOptionPane.showMessageDialog(this, "Вы были мертвы, но крест возрождения восстановил вам 5% здоровья!");
-                human.healToRevive();
-                attackButton.setEnabled(true);
-                defendButton.setEnabled(true);
-                itemsButton.setEnabled(true);
-                updateEntityPanel();
-            } else {
-                repeatLastRound(); // Возобновляем раунд
-                JOptionPane.showMessageDialog(this, "Вы проиграли.");
+        ItemManager itemManager = game.getItemManager();
+        Items revivalCross = null;
+        for (Items item : itemManager.getItemsList()) {
+            if (item.getName().equals("Крест возрождения")) {
+                revivalCross = item;
+                break;
             }
         }
-        if (game.isNewLevel()) {
-            showLevelUpDialog();
+        if (revivalCross.getCount() != 0) {
+            itemManager.useItem(revivalCross, human);
+            JOptionPane.showMessageDialog(this, "Вы проиграли, но крест возрождения восстановил вам 5% здоровья!");
+            human.healToRevive();
+            updateEntityPanel();
+            attackButton.setEnabled(true);
+            defendButton.setEnabled(true);
+            itemsButton.setEnabled(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Вы проиграли.");
+            repeatLastRound();
+        }
+    }
+
+    private void handleWin() {
+        attackButton.setEnabled(false);
+        defendButton.setEnabled(false);
+        itemsButton.setEnabled(false);
+        JOptionPane.showMessageDialog(this, "Вы победили.");
+        game.addWin(human);
+        if (game.isGameOver()) {
+            JOptionPane.showMessageDialog(this, "Игра окончена");
+        } else {
+            if (game.isNewLevel()) {
+                showLevelUpDialog();
+            }
+            startNewRound();
         }
     }
 
@@ -378,14 +259,14 @@ public class GUIDemo extends JFrame {
         defendButton.setEnabled(true);
         itemsButton.setEnabled(true);
 
-        game.startNewRound(human, false);
-
+        game.repeatLastRound(human);
         updateEntityPanel();
 
-        turnPanel.removeAll();
-        turnPanel.add(turnLabel);
-        System.out.println(playerActionLabel.getText());
-        isFirstGame = false;
+        playerActionLabel.setVisible(false);
+        enemyActionLabel.setVisible(false);
+        stunLabel.setVisible(false);
+        counterattackLabel.setVisible(false);
+
         turnPanel.revalidate();
         turnPanel.repaint();
     }
@@ -397,65 +278,53 @@ public class GUIDemo extends JFrame {
 
         expValue.setText(human.getExperience() + "/" + human.getNextExperience());
         pointsValue.setText(Integer.toString(human.getPoints()));
-        game.startNewRound(human, true);
 
-        enemy = battleEngine.getEnemy();
-        playerLevelLabel.setText(human.getLevel() + " уровень");
-        enemyLevelLabel.setText(enemy.getLevel() + " уровень");
-
-        playerDamageLabel.setText("Урон" + human.getDamage());
-        enemyDamageLabel.setText("Урон" + enemy.getDamage());
-
+        game.startNewRound(human);
+        enemy = game.getNextEnemy();
         updateEntityPanel();
 
-        turnPanel.removeAll();
-        turnPanel.add(turnLabel);
-        System.out.println(playerActionLabel.getText());
-        isFirstGame = false;
+        playerActionLabel.setVisible(false);
+        enemyActionLabel.setVisible(false);
+        stunLabel.setVisible(false);
+        counterattackLabel.setVisible(false);
+
         turnPanel.revalidate();
         turnPanel.repaint();
     }
 
     private void showLevelUpDialog() {
-        // Создаём модальное диалоговое окно
         JDialog levelUpDialog = new JDialog(this, "Повышение уровня!", true);
         levelUpDialog.setLayout(new BorderLayout());
         levelUpDialog.setSize(450, 200);
         levelUpDialog.setLocationRelativeTo(this);
 
-        // Сообщение
         JLabel messageLabel = new JLabel("Вы повысили уровень! Выберите бонус:", SwingConstants.CENTER);
         messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Кнопки для выбора
         JButton damageButton = new JButton("Увеличить урон на 25%");
         JButton healthButton = new JButton("Увеличить здоровье на 25%");
 
-        // Панель с кнопками
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 10));
         buttonPanel.add(damageButton);
         buttonPanel.add(healthButton);
 
-        // Обработчики нажатий
         damageButton.addActionListener((e) -> {
-            human.increaseDamageByPercentage(25); // Предполагается, что такой метод есть
+            human.increaseDamageByPercentage(25);
             JOptionPane.showMessageDialog(levelUpDialog, "Ваш урон увеличен на 25%!");
             levelUpDialog.dispose();
-            updateEntityPanel(); // Обновляем отображение характеристик игрока
+            updateEntityPanel();
         });
 
         healthButton.addActionListener((e) -> {
-            human.increaseHealthByPercentage(25); // Предполагается, что такой метод есть
+            human.increaseHealthByPercentage(25);
             JOptionPane.showMessageDialog(levelUpDialog, "Ваше здоровье увеличено на 25%!");
             levelUpDialog.dispose();
-            updateEntityPanel(); // Обновляем отображение характеристик игрока
+            updateEntityPanel();
         });
 
-        // Добавляем компоненты
         levelUpDialog.add(messageLabel, BorderLayout.NORTH);
         levelUpDialog.add(buttonPanel, BorderLayout.CENTER);
 
-        // Отображаем окно
         levelUpDialog.setVisible(true);
     }
 
@@ -463,18 +332,11 @@ public class GUIDemo extends JFrame {
         ItemManager itemManager = game.getItemManager();
         List<Items> items = itemManager.getItemsList();
 
-        if (items.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "У вас нет предметов.", "Инвентарь пуст", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        // Создаём диалоговое окно
         JDialog itemsDialog = new JDialog(this, "Мешок предметов", true);
         itemsDialog.setLayout(new BorderLayout());
         itemsDialog.setSize(400, 300);
         itemsDialog.setLocationRelativeTo(this);
 
-        // Список предметов
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (Items item : items) {
             listModel.addElement(item.getName() + " x" + item.getCount());
@@ -483,7 +345,6 @@ public class GUIDemo extends JFrame {
         JList<String> itemsList = new JList<>(listModel);
         itemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Панель с кнопками
         JButton useButton = new JButton("Использовать");
         JButton closeButton = new JButton("Закрыть");
 
@@ -491,50 +352,46 @@ public class GUIDemo extends JFrame {
         buttonPanel.add(useButton);
         buttonPanel.add(closeButton);
 
-        // Действие при нажатии "Использовать"
         useButton.addActionListener(e -> {
             String selectedItem = itemsList.getSelectedValue();
             if (selectedItem == null) {
                 JOptionPane.showMessageDialog(itemsDialog, "Выберите предмет для использования.");
                 return;
             }
-
             String itemName = selectedItem.split(" x")[0];
             Items targetItem = null;
-
             for (Items item : itemManager.getItemsList()) {
                 if (item.getName().equals(itemName)) {
                     targetItem = item;
                     break;
                 }
             }
-
-            if (targetItem != null && targetItem.getCount() > 0) {
+            if (targetItem.getName().equals("Крест возрождения") && human.getHealth() >= 0) {
+                JOptionPane.showMessageDialog(itemsDialog, "Вы не можете использовать крест возрождения пока вы живы!!");
+                return;
+            } else if (targetItem != null && targetItem.getCount() > 0) {
                 if (itemManager.useItem(targetItem, human)) {
-                    updateEntityPanel(); // Обновляем здоровье в GUI
-
-                    // Обновляем список
+                    updateEntityPanel();
                     listModel.removeAllElements();
                     for (Items item : itemManager.getItemsList()) {
                         listModel.addElement(item.getName() + " x" + item.getCount());
                     }
-
                     JOptionPane.showMessageDialog(itemsDialog, "Вы использовали: " + itemName);
                 }
+            } else {
+                JOptionPane.showMessageDialog(itemsDialog, "Вы не можете использовать предмет, которого у вас нет! ");
+                return;
             }
         });
 
-        // Закрытие окна
         closeButton.addActionListener(e -> itemsDialog.dispose());
 
-        // Добавляем компоненты
         itemsDialog.add(new JScrollPane(itemsList), BorderLayout.CENTER);
         itemsDialog.add(buttonPanel, BorderLayout.SOUTH);
         itemsDialog.setVisible(true);
     }
 
-    private void updateInfoAfterMove(int playerAction, int enemyAction, BattleEngine battleEngine) {
-
+    private void updateInfoAfterMove(int playerAction, int enemyAction) {
         if (playerAction == 1 && enemyAction == 1) {
             playerActionLabel.setText("Вы атакуете");
             enemyActionLabel.setText("Враг атакует");
@@ -542,13 +399,13 @@ public class GUIDemo extends JFrame {
         } else if (playerAction == 1 && enemyAction == 0) {
             playerActionLabel.setText("Вы атакуете");
             enemyActionLabel.setText("Враг защищается");
-            if (!battleEngine.isEnemyStunned() && !battleEngine.isPlayerStunned()) {
+            if (!game.isEnemyStunned() && !game.isPlayerStunned()) {
                 counterattackLabel.setText("Враг контратаковал Вас");
             }
         } else if (playerAction == 0 && enemyAction == 1) {
             playerActionLabel.setText("Вы защищаетесь");
             enemyActionLabel.setText("Враг атакует");
-            if (!battleEngine.isPlayerStunned() && !battleEngine.isEnemyStunned()) {
+            if (!game.isPlayerStunned() && !game.isEnemyStunned()) {
                 counterattackLabel.setText("Вы контратакуете");
             }
         } else if (playerAction == 0 && enemyAction == 0) {
@@ -557,29 +414,47 @@ public class GUIDemo extends JFrame {
             counterattackLabel.setText("");
         }
 
-        if (battleEngine.getPlayerTurn()) {
+        if (game.isPlayerTurn()) {
             turnLabel.setText("Ваш ход");
         } else {
             turnLabel.setText("Ход противника");
+        }
+
+        stunLabel.setText("");
+        if (game.isEnemyStunned()) {
+            stunLabel.setText("Враг был оглушен");
+        } else if (game.isPlayerStunned()) {
+            stunLabel.setText("Игрок был оглушен");
         }
 
     }
 
     private void updateEntityPanel() {
         enemyImagePanel.setNewImage(enemy.getName() + ".jpg");
-        enemyHealthBar.setMaximum(enemy.getMaxHealth());
-        enemyHealthBar.setValue(enemy.getMaxHealth());
-        enemyHealthLabel.setText(enemy.getHealth() + "/" + enemy.getMaxHealth());
         enemyDamageLabel.setText("Урон " + enemy.getDamage());
         enemyLevelLabel.setText(enemy.getLevel() + " уровень");
         enemyNameLabel.setText(enemy.getName());
+
+        if (enemy.getHealth() >= 0) {
+            enemyHealthLabel.setText(enemy.getHealth() + "/" + enemy.getMaxHealth());
+            System.out.println("текущее значение здоровья врага " + enemy.getName() + " - " + enemy.getHealth());
+            enemyHealthBar.setMaximum(enemy.getMaxHealth());
+            enemyHealthBar.setValue(enemy.getHealth());
+        } else {
+            enemyHealthLabel.setText("0/" + enemy.getMaxHealth());
+            enemyHealthBar.setValue(0);
+        }
         if (human.getHealth() >= 0) {
             playerHealthLabel.setText(human.getHealth() + "/" + human.getMaxHealth());
+            playerHealthBar.setMaximum(human.getMaxHealth());
+            playerHealthBar.setValue(human.getHealth());
         } else {
             playerHealthLabel.setText("0/" + human.getMaxHealth());
+            playerHealthBar.setValue(0);
         }
-        playerHealthBar.setMaximum(human.getMaxHealth());
-        playerHealthBar.setValue(human.getHealth());
+
+        playerLevelLabel.setText(human.getLevel() + " уровень");
+        playerDamageLabel.setText("Урон" + human.getDamage());
 
         turnPanel.revalidate();
         turnPanel.repaint();
@@ -587,70 +462,157 @@ public class GUIDemo extends JFrame {
         centerPanel.repaint();
     }
 
+    private void openDialog() {
+
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GUIDemo::new);
 
     }
 
-    private void openDialog() {
-
+    public GameEngine getGameEngine() {
+        return this.game;
     }
 
-    private JPanel createTopPanel() {
-        JPanel topPanel = new JPanel();
-        topPanel.setBackground(Color.PINK);
-        topPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JLabel titleLabel = new JLabel("FIGHT");
-
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-
-        topPanel.add(titleLabel);
-        return topPanel;
+    public JPanel getTurnPanel() {
+        return this.turnPanel;
     }
 
-    private JPanel createCenterPanel(Entity enemy, Entity player) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 3));
-        panel.add(createCharacterPanel(enemy));   // левая панель (враг)
-        panel.add(createInfoPanel());             // центральная информация
-        panel.add(createCharacterPanel(player));   // правая панель (игрок)
-        return panel;
+    public JLabel getPointsValueLabel() {
+        return this.pointsValue;
     }
 
-    private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-        itemsButton = new JButton("Предметы");
-        attackButton = new JButton("Атаковать");
-        defendButton = new JButton("Защититься");
-        debuffButton = new JButton("Ослабить");
-
-        bottomPanel.add(itemsButton);
-        bottomPanel.add(attackButton);
-        bottomPanel.add(defendButton);
-        bottomPanel.add(debuffButton);
-
-        return bottomPanel;
+    public JLabel getExpValueLabel() {
+        return this.expValue;
     }
 
-    private void manageStunInfo() {
-        stunLabel.setText("");
-        if (battleEngine.isEnemyStunned()) {
-            stunLabel.setText("Враг был оглушен");
-        } else if (battleEngine.isPlayerStunned()) {
-            stunLabel.setText("Игрок был оглушен");
-        }
+    public JButton getItemsButton() {
+        return this.itemsButton;
     }
 
-    private void appendOther(boolean flag) {
-        if (!flag) {
-            turnPanel.add(playerActionLabel);
-            turnPanel.add(enemyActionLabel);
-            turnPanel.add(stunLabel);
-            turnPanel.add(counterattackLabel);
-            turnPanel.repaint();
-            turnPanel.revalidate();
-        }
+    public JButton getAttackButton() {
+        return this.attackButton;
     }
+
+    public JButton getDefendButton() {
+        return this.defendButton;
+    }
+
+    public JButton getDebuffButton() {
+        return this.debuffButton;
+    }
+
+    public Player getHuman() {
+        return this.human;
+    }
+
+    public JProgressBar getPlayerHealthBar() {
+        return this.playerHealthBar;
+    }
+
+    public JLabel getPlayerNameLabel() {
+        return this.playerNameLabel;
+    }
+
+    public JLabel getPlayerLevelLabel() {
+        return this.playerLevelLabel;
+    }
+
+    public BackgroundPanel getPlayerImagePanel() {
+        return this.playerImagePanel;
+    }
+
+    public JLabel getEnemyNameLabel() {
+        return this.enemyNameLabel;
+    }
+
+    public JLabel getEnemyLevelLabel() {
+        return this.enemyLevelLabel;
+    }
+
+    public BackgroundPanel getEnemyImagePanel() {
+        return this.enemyImagePanel;
+    }
+
+    public void setPlayerActionLabel(JLabel playerAction) {
+        this.playerActionLabel = playerAction;
+    }
+
+    public void setPlayerHealthBar(JProgressBar healthBar) {
+        this.playerHealthBar = healthBar;
+    }
+
+    public void setPlayerHealthLabel(JLabel healthLabel) {
+        this.playerHealthLabel = healthLabel;
+    }
+
+    public void setPlayerDamageLabel(JLabel damageLabel) {
+        this.playerDamageLabel = damageLabel;
+    }
+
+    public void setPlayerNameLabel(JLabel nameLabel) {
+        this.playerNameLabel = nameLabel;
+    }
+
+    public void setPlayerLevelLabel(JLabel levelLabel) {
+        this.playerLevelLabel = levelLabel;
+    }
+
+    public void setPlayerImagePanel(BackgroundPanel imagePanel) {
+        this.playerImagePanel = imagePanel;
+    }
+
+    public void setEnemyActionLabel(JLabel enemyAction) {
+        this.enemyActionLabel = enemyAction;
+    }
+
+    public void setEnemyHealthBar(JProgressBar healthBar) {
+        this.enemyHealthBar = healthBar;
+    }
+
+    public void setEnemyHealthLabel(JLabel healthLabel) {
+        this.enemyHealthLabel = healthLabel;
+    }
+
+    public void setEnemyDamageLabel(JLabel damageLabel) {
+        this.enemyDamageLabel = damageLabel;
+    }
+
+    public void setEnemyNameLabel(JLabel nameLabel) {
+        this.enemyNameLabel = nameLabel;
+    }
+
+    public void setEnemyLevelLabel(JLabel levelLabel) {
+        this.enemyLevelLabel = levelLabel;
+    }
+
+    public void setEnemyImagePanel(BackgroundPanel imagePanel) {
+        this.enemyImagePanel = imagePanel;
+    }
+
+    public void setPointsValueLabel(JLabel pointsValue) {
+        this.pointsValue = pointsValue;
+    }
+
+    public void setExpPointsValueLabel(JLabel expValue) {
+        this.expValue = expValue;
+    }
+
+    public void setTurnPanel(JPanel turnPanel) {
+        this.turnPanel = turnPanel;
+    }
+
+    public void setTurnLabel(JLabel turnLabel) {
+        this.turnLabel = turnLabel;
+    }
+
+    public void setCounterattackLabel(JLabel counterattackLabel) {
+        this.counterattackLabel = counterattackLabel;
+    }
+
+    public void setStunLabel(JLabel stunLabel) {
+        this.stunLabel = stunLabel;
+    }
+
 }

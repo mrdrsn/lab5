@@ -13,28 +13,78 @@ import com.mycompany.lab5.enemy.ShaoKahn;
 public class GameEngine {
 
     private int locationNumber;
+    private int currentLocationNumber = 1;
     private final BattleEngine battleEngine;
+    private final EnemyManager enemyManager;
     private final LevelManager levelManager = new LevelManager();
     private final ItemManager itemManager = new ItemManager();
-    private final CharacterAction characterAction = new CharacterAction();
 
-    private Enemy[] enemies = characterAction.getEnemies();
+    private Enemy[] enemies;
     private int roundNumber = 0;
     private boolean reachedNewLevel = false;
-    private boolean isGameOver = false;
+    private boolean gameOver = false;
 
-    public GameEngine(BattleEngine be) {
-        this.battleEngine = be;
-        this.battleEngine.setEnemy(enemies[0]);
+    public GameEngine(int locationNumber) {
+        enemyManager = new EnemyManager(locationNumber);
+        battleEngine = new BattleEngine();
+        enemies = enemyManager.getEnemies();
+        battleEngine.setEnemy(enemies[0]);
     }
 
-    public Enemy getEnemy(int number) {
-        return this.enemies[number];
+    public void hit(Player human, Enemy enemy, int action) {
+        battleEngine.processAction(human, enemy, action);
     }
 
-    public void setLocationNumber(int locationNumber) {
-        this.locationNumber = locationNumber;
-        manageLocation();
+    public void addWin(Player player) {
+        reachedNewLevel = false;
+        player.setWin();
+        itemManager.addRandomItem();
+        if (battleEngine.getEnemy() instanceof ShaoKahn) {
+            levelManager.addBossExperience(player, enemies);
+            if (roundNumber == enemies.length) {
+                gameOver = true;
+            } else {
+                currentLocationNumber++;
+            }
+        }
+        levelManager.addExperience(player, enemies);
+        if (levelManager.isNewLevel()) {
+            reachedNewLevel = true;
+        }
+        roundNumber++;
+    }
+
+    public void repeatLastRound(Player player) {
+        Enemy lastEnemy = battleEngine.getEnemy();
+        battleEngine.setTurn(false);
+        player.setFullHealth();
+        lastEnemy.setFullHealth();
+    }
+
+    public void startNewRound(Player player) {
+        reachedNewLevel = false;
+        battleEngine.setTurn(false);
+        Enemy nextEnemy = enemies[roundNumber];
+        battleEngine.setEnemy(nextEnemy);
+        player.setFullHealth();
+        nextEnemy.setFullHealth();
+    }
+
+    public boolean isPlayerStunned(){
+        return this.battleEngine.isPlayerStunned();
+    }
+    public boolean isEnemyStunned(){
+        return this.battleEngine.isEnemyStunned();
+    }
+    public boolean isPlayerTurn(){
+        return this.battleEngine.getPlayerTurn();
+    }
+    public int getLocationNumber() {
+        return this.locationNumber;
+    }
+
+    public int getCurrentLocationNumber() {
+        return this.currentLocationNumber;
     }
 
     public boolean isNewLevel() {
@@ -45,104 +95,20 @@ public class GameEngine {
         return this.itemManager;
     }
 
-    public final void manageLocation() {
-        switch (locationNumber) {
-            case (1) -> {
-                enemies = new Enemy[3];
-                enemies[0] = characterAction.getEnemies()[0];
-                enemies[1] = characterAction.getEnemies()[1];
-                enemies[2] = characterAction.getEnemies()[4]; //босс
-            }
-            case (2) -> {
-                enemies = new Enemy[6];
-                enemies[0] = characterAction.getEnemies()[0];
-                enemies[1] = characterAction.getEnemies()[1];
-                enemies[2] = characterAction.getEnemies()[4]; //босс
-                enemies[3] = characterAction.getEnemies()[2];
-                enemies[4] = characterAction.getEnemies()[3];
-                enemies[5] = characterAction.getEnemies()[5]; //босс
-            }
-            case (3) -> {
-                enemies = new Enemy[3];
-                enemies[0] = characterAction.getEnemies()[0];
-                enemies[1] = characterAction.getEnemies()[1];
-                enemies[2] = characterAction.getEnemies()[4];
-            }
-
-        }
+    public BattleEngine getBattleEngine() {
+        return this.battleEngine;
+    }
+    
+    public Enemy getFirstEnemy() {
+        return this.enemies[0];
+    }
+    
+    public Enemy getNextEnemy() {
+        return battleEngine.getEnemy();
     }
 
-    public void hit(Player human, Enemy enemy, int action) {
-        if (action == 2 && human instanceof Debuffer) {
-            ((Debuffer) human).applyDebuff(enemy);
-            handleDebuffEffect(human, enemy);
-        } else {
-            battleEngine.processAction(human, enemy, action);
-        }
-    }
-
-    private void handleDebuffEffect(Player player, Enemy enemy) {
-        boolean isDefending = (enemy.getAttack() == 0); // предположим, есть такой метод
-
-        if (isDefending) {
-            // С вероятностью 75% накладываем дебаф
-            if (Math.random() < 0.75) {
-                int turns = player.getLevel(); // длительность = уровень игрока
-                enemy.applyWeakness(turns);
-                System.out.println("Враг ослаблен на " + turns + " ходов.");
-            } else {
-                System.out.println("Противник успешно заблокировал ослабление.");
-            }
-        } else {
-            // Если противник атакует — ослабление срывается, игрок получает бонус к урону
-            player.increaseDamageByPercentage(15);
-            System.out.println("Вы получили бонус к урону +15%");
-        }
-    }
-
-    public void manageExp(Player player) {
-
-    }
-
-    public void startNewRound(Player player, boolean hasPlayerWon) {
-//        manageLocation();
-        reachedNewLevel = false;
-        Enemy lastEnemy = battleEngine.getEnemy();
-        battleEngine.setTurn(false);
-        if (hasPlayerWon) {
-            itemManager.addRandomItem();
-            roundNumber++;
-            if (roundNumber == enemies.length) {
-                isGameOver = true;
-            } else {
-                player.setWin();
-                Enemy nextEnemy = enemies[roundNumber];
-                battleEngine.setEnemy(nextEnemy);
-                //тут еще проверка levelmanager
-                player.setFullHealth();
-                nextEnemy.setFullHealth();
-            }
-        } else {
-            player.setFullHealth();
-            lastEnemy.setFullHealth();
-        }
-    }
-
-    public void addWin(Player player) {
-        reachedNewLevel = false;
-        player.setWin();
-        if (battleEngine.getEnemy() instanceof ShaoKahn) {
-            levelManager.addBossExperience(player, enemies);
-        }
-        levelManager.addExperience(player, enemies);
-        if (levelManager.isNewLevel()) {
-            reachedNewLevel = true;
-        }
-        System.out.println("Текущее число побед игрока: " + player.getWin());
-    }
-
-    public boolean getGameOver() {
-        return this.isGameOver;
+    public boolean isGameOver() {
+        return this.gameOver;
     }
 
 }
