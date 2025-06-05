@@ -16,17 +16,20 @@ public class Player extends Entity implements Debuffer {
     private int points;
     private int experience;
     private int win;
-    private int nextexperience;
+    private int nextExperience;
 
     private int debuffTurns = 0;
     private boolean isDebuffed = false;
+
     public Player() {
         super(0, 80, 16);
         this.points = 0;
         this.experience = 0;
-        this.nextexperience = 40;
+        this.nextExperience = 40;
         this.win = 0;
     }
+
+
 
     public int getPoints() {
         return this.points;
@@ -37,7 +40,7 @@ public class Player extends Entity implements Debuffer {
     }
 
     public int getNextExperience() {
-        return this.nextexperience;
+        return this.nextExperience;
     }
 
     public int getWin() {
@@ -53,7 +56,7 @@ public class Player extends Entity implements Debuffer {
     }
 
     public void setNextExperience(int e) {
-        this.nextexperience = e;
+        this.nextExperience = e;
     }
 
     public void setWin() {
@@ -69,34 +72,4 @@ public class Player extends Entity implements Debuffer {
         return this.name;
     }
 
-
-    @Override
-    public void applyDebuff(Entity target) {
-        if (target instanceof Enemy) {
-            ((Enemy) target).applyWeakness(this.getLevel()); // уровень игрока влияет на длительность
-        }
-    }
-
-    public boolean isAffectedByDebuff() {
-        return isDebuffed;
-    }
-
-    public int getDebuffDuration() {
-        return debuffTurns;
-    }
-
-    public void decreaseDebuffTurns() {
-        if (debuffTurns > 0) {
-            debuffTurns--;
-            if (debuffTurns == 0) {
-                isDebuffed = false;
-            }
-        }
-    }
-
-    public void clearDebuff() {
-        debuffTurns = 0;
-        isDebuffed = false;
-    }
 }
-

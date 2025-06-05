@@ -1,8 +1,9 @@
 package com.mycompany.lab5.ui;
 
+import com.mycompany.lab5.RecordManager;
 import com.mycompany.lab5.battle.BattleEngine;
 import com.mycompany.lab5.battle.GameEngine;
-import com.mycompany.lab5.items.Items;
+import com.mycompany.lab5.items.Item;
 import com.mycompany.lab5.items.ItemManager;
 import com.mycompany.lab5.model.Entity;
 import com.mycompany.lab5.model.Player;
@@ -43,6 +44,7 @@ public class GUIDemo extends JFrame {
     public Player human = new Player();
     public Enemy enemy = null;
     public GameEngine game;
+    public RecordManager recordManager = new RecordManager();
 
     private JPanel centerPanel;
 
@@ -50,6 +52,7 @@ public class GUIDemo extends JFrame {
     private JButton defendButton = new JButton("Защититься"); //основные кнопки
     private JButton itemsButton = new JButton("Предметы"); //основные кнопки
     private JButton debuffButton = new JButton("Ослабить"); //основные кнопки
+    private JButton debugButton = new JButton("Кнопка бога");
 
     private JLabel playerNameLabel;
     private JLabel enemyNameLabel;
@@ -77,6 +80,10 @@ public class GUIDemo extends JFrame {
     private JLabel enemyActionLabel;
     private JLabel counterattackLabel;
     private JLabel stunLabel;
+    private JLabel debuffLabel;
+    
+    private JLabel currentLocationLabel;
+    private JLabel currentEnemyLabel;
 
     private GUIHelper creator = new GUIHelper(this);
 
@@ -179,11 +186,21 @@ public class GUIDemo extends JFrame {
             updatePanelsAfterMove();
             updateInfoAfterMove(0, enemy.getAttack());
         });
+
+        debuffButton.setEnabled(false);
         debuffButton.addActionListener((ActionEvent e) -> {
             game.hit(human, enemy, 2); // 2 - действие ослабления
             updatePanelsAfterMove();
             updateInfoAfterMove(2, enemy.getAttack());
-            System.out.println("Игрок попытался ослабить врага");
+            applyDebuff();
+        });
+        debugButton.addActionListener((ActionEvent e) -> {
+            int normalDamage = human.getDamage();
+            human.setDamage(1000);
+            game.hit(human, enemy, 1);
+            human.setDamage(normalDamage);
+            updatePanelsAfterMove();
+            updateInfoAfterMove(1, enemy.getAttack());
         });
 
         gameFrame.add(topPanel, BorderLayout.NORTH);
@@ -195,12 +212,34 @@ public class GUIDemo extends JFrame {
         gameFrame.setVisible(true);
     }
 
+    private void applyDebuff() {
+        if (human.getLevel() == 0) {
+            JOptionPane.showMessageDialog(this, "Ослабление можно использовать с 1-го уровня игрока.");
+            return;
+        }
+        if (game.isEnemyDebuffed()) {
+
+            enemyImagePanel.setNewImage(enemy.getName() + "Debuff.jpg");
+            enemyHealthBar.setForeground(Color.blue);
+
+            centerPanel.revalidate();
+            centerPanel.repaint();
+        } else if (game.isPlayerDebuffed()) {
+            playerImagePanel.setNewImage("КитанаDebuff.jpg");
+            playerHealthBar.setForeground(Color.blue);
+
+            centerPanel.revalidate();
+            centerPanel.repaint();
+        }
+
+    }
+
     private void updatePanelsAfterMove() {
         playerActionLabel.setVisible(true);
         enemyActionLabel.setVisible(true);
         stunLabel.setVisible(true);
         counterattackLabel.setVisible(true);
-
+        debuffLabel.setVisible(true);
         updateEntityPanel();
         if (human.getHealth() <= 0) {
             human.setNewHealth(0);
@@ -216,9 +255,10 @@ public class GUIDemo extends JFrame {
         attackButton.setEnabled(false);
         defendButton.setEnabled(false);
         itemsButton.setEnabled(false);
+        debuffButton.setEnabled(false);
         ItemManager itemManager = game.getItemManager();
-        Items revivalCross = null;
-        for (Items item : itemManager.getItemsList()) {
+        Item revivalCross = null;
+        for (Item item : itemManager.getItemsList()) {
             if (item.getName().equals("Крест возрождения")) {
                 revivalCross = item;
                 break;
@@ -242,16 +282,52 @@ public class GUIDemo extends JFrame {
         attackButton.setEnabled(false);
         defendButton.setEnabled(false);
         itemsButton.setEnabled(false);
+        debuffButton.setEnabled(false);
         JOptionPane.showMessageDialog(this, "Вы победили.");
         game.addWin(human);
+        System.out.println(game.isGameOver());
         if (game.isGameOver()) {
-            JOptionPane.showMessageDialog(this, "Игра окончена");
+            recordManager.writeToTable(human.getName(), human.getPoints());
+            createGameOverDialog();
+            return;
         } else {
             if (game.isNewLevel()) {
                 showLevelUpDialog();
             }
             startNewRound();
         }
+    }
+
+    private void createGameOverDialog() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel messageLabel = new JLabel("Игра окончена. Ваш результат записан в таблицу рекордов.", SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        panel.add(messageLabel, BorderLayout.CENTER);
+
+        // Панель с кнопками
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton viewTableButton = new JButton("Посмотреть таблицу рекордов");
+        JButton exitButton = new JButton("Выйти из игры");
+        
+        buttonPanel.add(viewTableButton);
+        buttonPanel.add(exitButton);
+        
+        viewTableButton.addActionListener((ActionEvent e) ->{
+            openDialog();
+            
+        });
+        exitButton.addActionListener((ActionEvent e) ->{
+            System.exit(0);
+        });
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Создаём диалоговое окно
+        JDialog gameOverDialog = new JDialog(this, "Игра окончена", true);
+        gameOverDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        gameOverDialog.setContentPane(panel);
+        gameOverDialog.pack();
+        gameOverDialog.setLocationRelativeTo(this);
+        gameOverDialog.setVisible(true);
     }
 
     private void repeatLastRound() {
@@ -266,6 +342,7 @@ public class GUIDemo extends JFrame {
         enemyActionLabel.setVisible(false);
         stunLabel.setVisible(false);
         counterattackLabel.setVisible(false);
+        debuffLabel.setVisible(false);
 
         turnPanel.revalidate();
         turnPanel.repaint();
@@ -275,6 +352,8 @@ public class GUIDemo extends JFrame {
         attackButton.setEnabled(true);
         defendButton.setEnabled(true);
         itemsButton.setEnabled(true);
+        
+        currentLocationLabel.setText(game.getCurrentLocationNumber() +  " из " +game.getLocationNumber());
 
         expValue.setText(human.getExperience() + "/" + human.getNextExperience());
         pointsValue.setText(Integer.toString(human.getPoints()));
@@ -287,6 +366,7 @@ public class GUIDemo extends JFrame {
         enemyActionLabel.setVisible(false);
         stunLabel.setVisible(false);
         counterattackLabel.setVisible(false);
+        debuffLabel.setVisible(false);
 
         turnPanel.revalidate();
         turnPanel.repaint();
@@ -309,14 +389,14 @@ public class GUIDemo extends JFrame {
         buttonPanel.add(healthButton);
 
         damageButton.addActionListener((e) -> {
-            human.increaseDamageByPercentage(25);
+            game.boostDamage(human);
             JOptionPane.showMessageDialog(levelUpDialog, "Ваш урон увеличен на 25%!");
             levelUpDialog.dispose();
             updateEntityPanel();
         });
 
         healthButton.addActionListener((e) -> {
-            human.increaseHealthByPercentage(25);
+            game.boostMaxHealth(human);
             JOptionPane.showMessageDialog(levelUpDialog, "Ваше здоровье увеличено на 25%!");
             levelUpDialog.dispose();
             updateEntityPanel();
@@ -330,7 +410,7 @@ public class GUIDemo extends JFrame {
 
     private void openItemsWindow() {
         ItemManager itemManager = game.getItemManager();
-        List<Items> items = itemManager.getItemsList();
+        List<Item> items = itemManager.getItemsList();
 
         JDialog itemsDialog = new JDialog(this, "Мешок предметов", true);
         itemsDialog.setLayout(new BorderLayout());
@@ -338,7 +418,7 @@ public class GUIDemo extends JFrame {
         itemsDialog.setLocationRelativeTo(this);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (Items item : items) {
+        for (Item item : items) {
             listModel.addElement(item.getName() + " x" + item.getCount());
         }
 
@@ -359,8 +439,8 @@ public class GUIDemo extends JFrame {
                 return;
             }
             String itemName = selectedItem.split(" x")[0];
-            Items targetItem = null;
-            for (Items item : itemManager.getItemsList()) {
+            Item targetItem = null;
+            for (Item item : itemManager.getItemsList()) {
                 if (item.getName().equals(itemName)) {
                     targetItem = item;
                     break;
@@ -373,7 +453,7 @@ public class GUIDemo extends JFrame {
                 if (itemManager.useItem(targetItem, human)) {
                     updateEntityPanel();
                     listModel.removeAllElements();
-                    for (Items item : itemManager.getItemsList()) {
+                    for (Item item : itemManager.getItemsList()) {
                         listModel.addElement(item.getName() + " x" + item.getCount());
                     }
                     JOptionPane.showMessageDialog(itemsDialog, "Вы использовали: " + itemName);
@@ -392,35 +472,54 @@ public class GUIDemo extends JFrame {
     }
 
     private void updateInfoAfterMove(int playerAction, int enemyAction) {
-        if (playerAction == 1 && enemyAction == 1) {
-            playerActionLabel.setText("Вы атакуете");
-            enemyActionLabel.setText("Враг атакует");
-            counterattackLabel.setText("");
-        } else if (playerAction == 1 && enemyAction == 0) {
-            playerActionLabel.setText("Вы атакуете");
-            enemyActionLabel.setText("Враг защищается");
-            if (!game.isEnemyStunned() && !game.isPlayerStunned()) {
-                counterattackLabel.setText("Враг контратаковал Вас");
-            }
-        } else if (playerAction == 0 && enemyAction == 1) {
-            playerActionLabel.setText("Вы защищаетесь");
-            enemyActionLabel.setText("Враг атакует");
-            if (!game.isPlayerStunned() && !game.isEnemyStunned()) {
-                counterattackLabel.setText("Вы контратакуете");
-            }
-        } else if (playerAction == 0 && enemyAction == 0) {
-            playerActionLabel.setText("Вы защищаетесь");
-            enemyActionLabel.setText("Враг защищается");
-            counterattackLabel.setText("");
-        }
+        counterattackLabel.setText("");
+        stunLabel.setText("");
+        debuffLabel.setText("");
 
         if (game.isPlayerTurn()) {
             turnLabel.setText("Ваш ход");
+            debuffButton.setEnabled(true);
         } else {
             turnLabel.setText("Ход противника");
+            debuffButton.setEnabled(false);
         }
 
-        stunLabel.setText("");
+        if (playerAction == 1) {
+            playerActionLabel.setText("Вы атаковали");
+        } else if (playerAction == 0) {
+            playerActionLabel.setText("Вы защищались");
+        } else if (playerAction == 2) {
+            playerActionLabel.setText("Вы попытались ослабить врага");
+        }
+
+        if (enemyAction == 1) {
+            enemyActionLabel.setText("Враг атаковал");
+        } else if (enemyAction == 0) {
+            enemyActionLabel.setText("Враг защищался");
+        } else if (enemyAction == 2) {
+            enemyActionLabel.setText("Враг попытался ослабить Вас");
+        }
+
+        if (!game.isEnemyStunned() || !game.isPlayerStunned()) {
+            if (playerAction == 1 && enemyAction == 0) {
+                counterattackLabel.setText("Враг контратаковал Вас");
+            } else if (playerAction == 0 && enemyAction == 1) {
+                counterattackLabel.setText("Вы контратаковали врага");
+            }
+        }
+
+        if (!game.isEnemyStunned() || !game.isPlayerStunned()) {
+            if (playerAction == 2 && enemyAction == 1) {
+                debuffLabel.setText("Вы попытались ослабить врага, но безуспешно");
+            } else if (playerAction == 2 && enemyAction == 0) {
+                if (game.isEnemyDebuffed()) {
+                    debuffLabel.setText("Вы ослабили врага на " + human.getLevel() + " ходов");
+                } else {
+                    debuffLabel.setText("Враг заблокировал ослабление");
+                }
+            }
+        }
+
         if (game.isEnemyStunned()) {
             stunLabel.setText("Враг был оглушен");
         } else if (game.isPlayerStunned()) {
@@ -430,6 +529,18 @@ public class GUIDemo extends JFrame {
     }
 
     private void updateEntityPanel() {
+        if (!game.isEnemyDebuffed()) {
+            enemyImagePanel.setNewImage(enemy.getName() + ".jpg");
+            enemyHealthBar.setForeground(Color.GREEN);
+        }
+        if (!game.isPlayerDebuffed()) {
+            playerImagePanel.setNewImage("Китана.jpg");
+            playerHealthBar.setForeground(Color.GREEN);
+        }
+        if (game.isPlayerDebuffed()) {
+            playerImagePanel.setNewImage("КитанаDebuff.jpg");
+            playerHealthBar.setForeground(Color.blue);
+        }
         enemyImagePanel.setNewImage(enemy.getName() + ".jpg");
         enemyDamageLabel.setText("Урон " + enemy.getDamage());
         enemyLevelLabel.setText(enemy.getLevel() + " уровень");
@@ -463,7 +574,7 @@ public class GUIDemo extends JFrame {
     }
 
     private void openDialog() {
-
+        recordManager.readRecordsTable();
     }
 
     public static void main(String[] args) {
@@ -503,6 +614,10 @@ public class GUIDemo extends JFrame {
         return this.debuffButton;
     }
 
+    public JButton getDebugButton() {
+        return this.debugButton;
+    }
+
     public Player getHuman() {
         return this.human;
     }
@@ -534,6 +649,14 @@ public class GUIDemo extends JFrame {
     public BackgroundPanel getEnemyImagePanel() {
         return this.enemyImagePanel;
     }
+    
+    public JLabel getCurrentLocationLabel(){
+        return this.currentLocationLabel;
+    }
+    
+    public JLabel getCurrentEnemyLabel(){
+        return this.currentEnemyLabel;
+    } 
 
     public void setPlayerActionLabel(JLabel playerAction) {
         this.playerActionLabel = playerAction;
@@ -613,6 +736,17 @@ public class GUIDemo extends JFrame {
 
     public void setStunLabel(JLabel stunLabel) {
         this.stunLabel = stunLabel;
+    }
+
+    public void setDebuffLabel(JLabel debuffLabel) {
+        this.debuffLabel = debuffLabel;
+    }
+    
+    public void setLocationLabel(JLabel locationLabel){
+        this.currentLocationLabel = locationLabel;
+    }
+    public void setCurrentMonsterLabel(JLabel monsterLabel){
+        this.currentEnemyLabel = monsterLabel;
     }
 
 }

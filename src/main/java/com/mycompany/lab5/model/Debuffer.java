@@ -9,5 +9,4 @@ package com.mycompany.lab5.model;
  * @author nsoko
  */
 public interface Debuffer {
-    void applyDebuff(Entity opponent);
 }

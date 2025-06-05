@@ -9,5 +9,6 @@ package com.mycompany.lab5.model;
  * @author nsoko
  */
 public interface Boss {
-    
+    void regenerateHealth();
+    void cumulateDamage(int damage);
 }

@@ -6,157 +6,242 @@ import com.mycompany.lab5.model.Enemy;
 import com.mycompany.lab5.enemy.ShaoKahn;
 import java.util.Random;
 
-/**
- *
- * @author nsoko
- */
-//Отвечает за то, что происходит при взаимодействии двух участников (игрок vs враг) в одном ходе. 
 public class CombatSystem {
+
+    private boolean isPlayerTurn; // true — ход игрока, false — врага
 
     private boolean playerStunned;
     private boolean enemyStunned;
+
+    private boolean playerDebuffed;
+    private boolean enemyDebuffed;
+
+    private int playerDebuffedTurns;
+    private int enemyDebuffedTurns;
+
     private final Random random = new Random();
 
-    //Обработка одного хода (атака/защита/пропуск)
-    public boolean isPlayerStunned(){
-        return this.playerStunned;
+    public void setPlayerTurn(boolean isPlayerTurn) {
+        this.isPlayerTurn = isPlayerTurn;
     }
-    public boolean isEnemyStunned(){
-        return this.enemyStunned;
+
+    public boolean isPlayerTurn() {
+        return isPlayerTurn;
     }
-    
-    public BattleResult processMove(Entity attacker, Entity defender, boolean isPlayerTurn) {
 
+    public boolean isPlayerStunned() {
+        return playerStunned;
+    }
 
-        int attackType = attacker.getAttack();
-        int defendType = defender.getAttack();
+    public boolean isEnemyStunned() {
+        return enemyStunned;
+    }
+
+    public boolean isPlayerDebuffed() {
+        return playerDebuffed;
+    }
+
+    public boolean isEnemyDebuffed() {
+        return enemyDebuffed;
+    }
+
+    public void processMove(Entity attacker, Entity defender) {
+        int attackerAction = attacker.getAttack();
+        int defenderAction = defender.getAttack();
 
         if (isPlayerTurn && playerStunned) {
-            handlePlayerStunned(attacker, defender, defendType);
-            return new BattleResult(attacker, defender, defendType, false, false, false);
+            handlePlayerStunned(attacker, defender);
+            playerStunned = false;
+            return;
         } else if (!isPlayerTurn && enemyStunned) {
-            handleEnemyStunned(attacker, defender, defendType);
-            return new BattleResult(attacker, defender, defendType, false, false, false);
-        }
-
-        return switch (attackType + "-" + defendType) {
-            case "1-0" ->
-                handleCounterattack(attacker, defender);
-            case "1-1" ->
-                handleBothAttack(attacker, defender);
-            case "0-0" ->
-                handleBothDefend(attacker, defender, isPlayerTurn);
-            //пока не понятно
-            case "0-1" ->
-//                handleNoAction(attacker, defender);
-                handleCounterattack(defender, attacker);
-            case "-1-0", "-1-1" ->
-                handleStunnedAttack(attacker, defender, isPlayerTurn);
-            default ->
-                new BattleResult(attacker, defender, 0, false, false, false);
-        };
-    }
-
-    private void handleEnemyStunned(Entity attacker, Entity defender, int defendType) { //атакующий - враг и он оглушен, защищается игрок 
-        if (defendType == 1) {
-            int damage = defender.getDamage();
-            attacker.setHealth(-damage);
+            handleEnemyStunned(attacker, defender);
             enemyStunned = false;
+            return;
         }
-        enemyStunned = false;
-        System.out.println(attacker.getName() + " вышел из оглушения.");
+
+        if (playerDebuffed) {
+            //после наложения дебаффа следующий ход - игрока
+            if (isPlayerTurn && playerDebuffedTurns == defender.getLevel()) {
+                System.out.println("1й ход игрока под дебаффом из " + playerDebuffedTurns);
+                handlePlayerDebuffed(attacker, defender);
+            }
+            playerDebuffedTurns--;
+            if (playerDebuffedTurns == 0) {
+                handlePlayerDebuffed(attacker, defender);
+            }
+        }
+        
+        if(enemyDebuffed){
+            if(!isPlayerTurn && enemyDebuffedTurns == defender.getLevel()) {
+                System.out.println("1й ход врага под дебаффом из " + enemyDebuffedTurns);
+                handleEnemyDebuffed(attacker, defender);
+            }
+            enemyDebuffedTurns--;
+            if (enemyDebuffedTurns == 0){
+                handleEnemyDebuffed(attacker, defender);
+            }
+        }
+
+        String moveKey = attackerAction + "-" + defenderAction;
+
+        switch (moveKey) {
+            case "1-1": // Атака vs Атака
+                handleBothAttack(attacker, defender);
+                break;
+
+            case "1-0": // Атака vs Защита
+                handleAttackDefend(attacker, defender);
+                break;
+
+            case "0-1": // Защита vs Атака
+                handleDefendAttack(attacker, defender);
+                break;
+
+            case "0-0": // Защита vs Защита
+                handleBothDefend(attacker, defender);
+                break;
+
+            case "2-0": // Ослабление vs Защита
+                handleDebuffDefend(attacker, defender);
+                break;
+
+            case "2-1": // Ослабление vs Атака
+                handleDebuffAttack(attacker, defender);
+                break;
+
+            default:
+                System.out.println("Неизвестная комбинация действий: " + moveKey);
+                break;
+        }
     }
 
-    private void handlePlayerStunned(Entity attacker, Entity defender, int defendType) {
-        if (defendType == 1) {
-            int damage = defender.getDamage();
-            attacker.setHealth(-damage);
+    //attacker - Player, Defender - Enemy
+    private void handlePlayerDebuffed(Entity attacker, Entity defender) {
+
+        if (playerDebuffedTurns == defender.getLevel()) {
+            attacker.setDamage((int) (attacker.getDamage() / 2));
+            defender.setDamage((int) (defender.getDamage() * 1.25));
         }
-        playerStunned = false;
-        System.out.println(attacker.getName() + " вышел из оглушения.");
+        if (playerDebuffedTurns == 0) {
+            playerDebuffed = false;
+            if (attacker instanceof Player) {
+                
+                System.out.println(attacker.getName() + " вышел из ослабленного состояния! ");
+                attacker.setDebuffed(false);
+                attacker.setDamage(attacker.getDamage() * 2);
+                defender.setDamage((int) (defender.getDamage() / 1.25));
+            } else{
+                System.out.println(defender.getName() + " вышел из ослабленного состояния! ");
+                defender.setDebuffed(false);
+                defender.setDamage(attacker.getDamage() * 2);
+                attacker.setDamage((int) (defender.getDamage() / 1.25));
+            }
+        }
     }
 
-//    private void applyStun(Entity attacker, Entity defender, boolean isPlayerTurn) {
-//        if (isPlayerTurn) {
-//            playerStunned = false;
-//            System.out.println(attacker.getName() + " вышел из оглушения.");
-//        } else {
-//            enemyStunned = false;
-//            System.out.println(attacker.getName() + " был оглушен.");
-//        }
-//    }
-    private BattleResult handleCounterattack(Entity attacker, Entity defender) {
-        int damage;
-        boolean isCounterattack = true;
+    private void handleEnemyDebuffed(Entity attacker, Entity defender) { //attacker - Enemy, Defender - Player
+        
+        if (enemyDebuffedTurns == defender.getLevel()) {
+            attacker.setDamage((int) (attacker.getDamage() / 2));
+            defender.setDamage((int) (defender.getDamage() * 1.25));
+        }
+        if (enemyDebuffedTurns == 0) {
+            enemyDebuffed = false;
+            if (attacker instanceof Enemy) {
+                System.out.println(attacker.getName() + " вышел из ослабленного состояния! ");
+                attacker.setDebuffed(false);
+                attacker.setDamage(attacker.getDamage() * 2);
+                defender.setDamage((int) (defender.getDamage() / 1.25));
+            } else{
+                System.out.println(defender.getName() + " вышел из ослабленного состояния! ");
+                defender.setDebuffed(false);
+                defender.setDamage(attacker.getDamage() * 2);
+                attacker.setDamage((int) (defender.getDamage() / 1.25));
+            }
+        }
+    }
 
-        if (attacker instanceof ShaoKahn && random.nextDouble() < 0.15) {
-            // Шао Кан может сломать блок — контратака не срабатывает
-            damage = (int) (attacker.getDamage() * 0.5);
-            isCounterattack = false;
-            defender.setHealth(-damage); // обычный урон по защищающемуся
+    private void handleDebuffDefend(Entity attacker, Entity defender) {
+        if (attacker.getLevel() > 0 && !attacker.isStunned()) {
+            double chance = random.nextDouble();
+            if (chance < 0.75) {
+                if (defender instanceof Player) {
+                    playerDebuffed = true;
+                    playerDebuffedTurns = attacker.getLevel();
+                } else {
+                    enemyDebuffed = true;
+                    enemyDebuffedTurns = attacker.getLevel();
+                }
+                defender.setDebuffed(true);
+
+                System.out.println("успешно ослабил" + defender.getName() + "на " + attacker.getLevel() + " ходов");
+            } else {
+                System.out.println(attacker.getName() + "безуспешно пытался ослабить " + defender.getName());
+            }
         } else {
-            // обычная контратака: защищающийся бьёт атакующего
-            damage = (int) (defender.getDamage() * 0.5);
-            attacker.setHealth(-damage); // урон наносится атакующему
-            System.out.println(defender.getName() + " контратаковал " + attacker.getName());
+            System.out.println("вам пока рано ослаблять врагов. или вы оглушены.");
         }
-
-        return new BattleResult(defender, attacker, damage, isCounterattack, false, false);
+    }
+    
+    private void handleDebuffAttack(Entity attacker, Entity defender){
+        if(attacker.isStunned()){
+            System.out.println("вы оглушены. ослабление не прошло. по вам нанесли повышенный урон.");
+        } else{
+            System.out.println("ослабление сорвалось. был нанесен повышенный урон: " + defender.getDamage()*1.15);
+        }
+        attacker.setHealth((int) (-defender.getDamage()*1.15));
     }
 
-    private BattleResult handleBothAttack(Entity attacker, Entity defender) {
-        int damage = attacker.getDamage();
-        defender.setHealth(-damage);
-        return new BattleResult(attacker, defender, damage, false, false, false);
+    private void handleBothAttack(Entity attacker, Entity defender) {
+        defender.setHealth(-attacker.getDamage());
+//        attacker.setHealth(-defender.getDamage());
+        System.out.println(attacker.getName() + " и " + defender.getName() + " одновременно атаковали.");
     }
 
-    private BattleResult handleBothDefend(Entity attacker, Entity defender, boolean isPlayerTurn) {
+    private void handleAttackDefend(Entity attacker, Entity defender) {
+        // Если это Шао Кан, то есть шанс сломать защиту
+        if (defender instanceof ShaoKahn && random.nextDouble() < 0.15) {
+            attacker.setHealth(-(int) (defender.getDamage() * 0.5));
+            System.out.println("Шао Кан пробил защиту и контратаковал!");
+        } else {
+//            defender.setHealth(-attacker.getDamage());
+            attacker.setHealth(-(int) (defender.getDamage() * 0.5));
+            System.out.println(defender.getName() + " заблокировал и контратаковал.");
+        }
+    }
+
+    private void handleDefendAttack(Entity attacker, Entity defender) {
+        defender.setHealth(-(int) (attacker.getDamage() * 0.5));
+//        attacker.setHealth(-(int)(defender.getDamage() * 0.5));
+        System.out.println(attacker.getName() + " заблокировал и контратаковал.");
+    }
+
+    private void handleBothDefend(Entity attacker, Entity defender) {
         if (random.nextBoolean()) {
-            if (isPlayerTurn) {
+            if (attacker instanceof Player) {
                 enemyStunned = true;
+                System.out.println("Враг оглушён после двойной защиты.");
             } else {
                 playerStunned = true;
+                System.out.println("Игрок оглушён после двойной защиты.");
             }
-//            if (attacker instanceof Player) {
-//                playerStunned = true;
-//            } else {
-//                enemyStunned = true;
-//            }
-            return new BattleResult(attacker, defender, 0, false, true, false);
         } else {
-            return new BattleResult(attacker, defender, 0, false, false, false);
+            System.out.println("Оба продолжают защищаться.");
         }
     }
 
-    private BattleResult handleNoAction(Entity attacker, Entity defender) {
-        System.out.println("так называемое ничего.");
-        return new BattleResult(attacker, defender, 0, false, false, false);
-    }
-
-    private BattleResult handleStunnedAttack(Entity attacker, Entity defender, boolean isPlayerTurn) {
-        int damage = defender.getDamage();
-        attacker.setHealth(-damage);
-        if (isPlayerTurn) {
-            playerStunned = false;
-        } else {
-            enemyStunned = false;
+    private void handlePlayerStunned(Entity attacker, Entity defender) { //attacker -> player
+        if (defender.getAttack() == 1) {
+            attacker.setHealth(-defender.getDamage());
         }
-        return new BattleResult(defender, attacker, damage, false, false, false);
+        System.out.println(attacker.getName() + " пропускает ход из-за оглушения.");
     }
 
-    //Проверка завершения раунда
-    public boolean isRoundOver(Entity human, Entity enemy) {
-        return human.getHealth() <= 0 || enemy.getHealth() <= 0;
-    }
-
-    //Проверка завершения игры
-    public boolean isGameOver(Player human) {
-        return human.getWin() >= 11;
-    }
-
-    //Получение победителя
-    public Entity getWinner(Player human, Enemy enemy) {
-        return human.getHealth() > 0 ? human : enemy;
+    private void handleEnemyStunned(Entity attacker, Entity defender) { //attacker -> enemy
+        if (defender.getAttack() == 1) {
+            attacker.setHealth(-defender.getDamage());
+        }
+        System.out.println(attacker.getName() + " пропускает ход из-за оглушения.");
     }
 
 }

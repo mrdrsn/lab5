@@ -15,31 +15,31 @@ import java.util.Random;
 
 public class ItemManager {
 
-    private List<Items> itemsList = new ArrayList<>();
+    private List<Item> itemsList = new ArrayList<>();
     private Random random = new Random();
 
     public ItemManager() {
-        addItem(new Items("Крест возрождения", 0));
-        addItem(new Items("Большое зелье лечения", 0));
-        addItem(new Items("Малое зелье лечения", 0));
+        addItem(new Item("Крест возрождения", 0));
+        addItem(new Item("Большое зелье лечения", 0));
+        addItem(new Item("Малое зелье лечения", 0));
 
     }
 
     public void addRandomItem() {
         int chance = random.nextInt(100); // 0-99
 
-        if (chance < 100) { // 5% - крест возрождения
-            addItem(new Items("Крест возрождения", 1));
+        if (chance < 5) { // 5% - крест возрождения
+            addItem(new Item("Крест возрождения", 1));
         } else if (chance < 20) { // 15% (от 5 до 20) - большое зелье лечения
-            addItem(new Items("Большое зелье лечения", 1));
+            addItem(new Item("Большое зелье лечения", 1));
         } else if (chance < 45) { // 25% (от 20 до 45) - малое зелье лечения
-            addItem(new Items("Малое зелье лечения", 1));
+            addItem(new Item("Малое зелье лечения", 1));
         }
     }
 
-    public void addItem(Items item) {
+    public void addItem(Item item) {
         boolean found = false;
-        for (Items i : itemsList) {
+        for (Item i : itemsList) {
             if (i.getName().equals(item.getName())) {
                 i.setCount(item.getCount());
                 found = true;
@@ -51,7 +51,7 @@ public class ItemManager {
         }
     }
 
-    public boolean useItem(Items item, Player player) {
+    public boolean useItem(Item item, Player player) {
         if (item.getCount() > 0 && itemsList.contains(item)) {
             switch (item.getName()) {
                 case "Малое зелье лечения" -> {
@@ -80,7 +80,7 @@ public class ItemManager {
         return !itemsList.isEmpty();
     }
 
-    public List<Items> getItemsList() {
+    public List<Item> getItemsList() {
         return itemsList;
     }
 

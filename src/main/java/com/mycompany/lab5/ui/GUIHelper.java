@@ -4,9 +4,7 @@
  */
 package com.mycompany.lab5.ui;
 
-import com.mycompany.lab5.battle.GameEngine;
 import com.mycompany.lab5.model.Entity;
-import com.mycompany.lab5.model.Player;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,14 +12,9 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
@@ -55,6 +48,7 @@ public class GUIHelper {
         bottomPanel.add(gui.getAttackButton());
         bottomPanel.add(gui.getDefendButton());
         bottomPanel.add(gui.getDebuffButton());
+        bottomPanel.add(gui.getDebugButton());
 
         return bottomPanel;
     }
@@ -141,7 +135,7 @@ public class GUIHelper {
         expPanel.add(gui.getPointsValueLabel());
         expPanel.add(gui.getExpValueLabel());
         
-        gui.setTurnPanel(new JPanel(new GridLayout(5, 1)));
+        gui.setTurnPanel(new JPanel(new GridLayout(6, 1)));
         gui.getTurnPanel().setPreferredSize(new Dimension(300, 400));
         gui.getTurnPanel().setBackground(Color.red);
         JLabel playerAction = new JLabel("");
@@ -149,37 +143,40 @@ public class GUIHelper {
         JLabel turn = new JLabel("Ход противника");
         JLabel counterattack = new JLabel("");
         JLabel stun = new JLabel("");
+        JLabel debuff = new JLabel("");
 
         gui.setPlayerActionLabel(playerAction);
         gui.setEnemyActionLabel(enemyAction);
         gui.setTurnLabel(turn);
         gui.setCounterattackLabel(counterattack);
         gui.setStunLabel(stun);
+        gui.setDebuffLabel(debuff);
 
         playerAction.setHorizontalAlignment(SwingConstants.CENTER);
         enemyAction.setHorizontalAlignment(SwingConstants.CENTER);
         turn.setHorizontalAlignment(SwingConstants.CENTER);
         counterattack.setHorizontalAlignment(SwingConstants.CENTER);
         stun.setHorizontalAlignment(SwingConstants.CENTER);
+        debuff.setHorizontalAlignment(SwingConstants.CENTER);
 
         gui.getTurnPanel().add(turn);
         gui.getTurnPanel().add(playerAction);
         gui.getTurnPanel().add(enemyAction);
         gui.getTurnPanel().add(counterattack);
         gui.getTurnPanel().add(stun);
+        gui.getTurnPanel().add(debuff);
 
-        JPanel blankPanel = new JPanel(new GridLayout(2, 2));
+        JPanel blankPanel = new JPanel(new GridLayout(1, 2));
         JLabel locationLabel = new JLabel("Локация: ");
         JLabel locationCountLabel = new JLabel(gui.getGameEngine().getCurrentLocationNumber() + " из " + gui.getGameEngine().getLocationNumber());
-        JLabel locationMonsterLabel = new JLabel("Осталов врагов в текущей локации: ");
-        JLabel locationMonsterCountLabel = new JLabel("Х из У");
+        locationLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        locationCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gui.setLocationLabel(locationCountLabel);
 
         blankPanel.setBackground(Color.cyan);
         blankPanel.setPreferredSize(new Dimension(300, 100));
         blankPanel.add(locationLabel);
         blankPanel.add(locationCountLabel);
-        blankPanel.add(locationMonsterLabel);
-        blankPanel.add(locationMonsterCountLabel);
 
         infoPanel.add(expPanel);
         infoPanel.add(blankPanel);

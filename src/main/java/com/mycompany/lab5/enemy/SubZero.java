@@ -23,18 +23,5 @@ public class SubZero extends Enemy implements Debuffer {
         return this.name;
     }
 
-    @Override
-    public void applyDebuff(Entity opponent) {
-        int getMoveCount = opponent.getLevel() + 1;
-        if (opponent.getAttack() == 1) {
-            int chance = random.nextInt(100);
-            if (chance < 75) {
-                System.out.println("Ослабление применено. По вам увеличен урон на 25% и ваш урон уменьшен на 50% на " 
-                        + getMoveCount + " ходов");
-            }
-        } else {
-            opponent.increaseDamageByPercentage(15);
-            System.out.println("Ослабление сорвалось. По врагу увеличен урон на " + getMoveCount + " ходов.");
-        }
-    }
+    
 }

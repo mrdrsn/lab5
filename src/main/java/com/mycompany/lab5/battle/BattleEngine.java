@@ -1,82 +1,77 @@
-
 package com.mycompany.lab5.battle;
 
+import com.mycompany.lab5.enemy.ShaoKahn;
 import com.mycompany.lab5.model.Player;
 import com.mycompany.lab5.model.Enemy;
 
-
 //Здесь проигрывается весь бой с одним противником: ходы, изменение здоровья, применение предметов и т.д. 
 public class BattleEngine {
-    
+
     private final CombatSystem combat = new CombatSystem();
     private final EnemyBehaviorManager behaviorManager = new EnemyBehaviorManager();
-    private int actionIndex = 0;
-    private Enemy enemy = null;
-    private int[] enemyPattern = behaviorManager.getBehaviorFor(enemy);
+    private Enemy enemy;
     private boolean isPlayerTurn = false;
-    private boolean playerStunned = false;
-    private boolean enemyStunned = false;
-    private boolean battleOver = false;
-    
-    public BattleEngine(){
-//        setEnemy();
+
+    public Enemy getEnemy() {
+        return enemy;
     }
-    
-    public void setTurn(boolean playerTurn){
-        this.isPlayerTurn = playerTurn;
+
+    public void setEnemy(Enemy enemy) {
+        this.enemy = enemy;
     }
-    
-    public boolean getPlayerTurn(){
+
+    public void processAction(Player human, Enemy enemy, int playerAction) {
+        human.setAttack(playerAction);
+        behaviorManager.registerPlayerAction(playerAction);
+        behaviorManager.isPlayerTurn(isPlayerTurn);
+        int enemyAction = behaviorManager.getBehavior(enemy);
+
+        // Если босс пытается регенерировать
+        if (enemyAction == -1) {
+            if (playerAction == 0 || playerAction == 2) {
+                ((ShaoKahn) enemy).regenerateHealth();
+                System.out.println("Шао Кан успешно восстановил здоровье!");
+            } else if (playerAction == 1) {
+                int doubleDamage = human.getDamage() * 2;
+                enemy.setHealth(-doubleDamage);
+                System.out.println("Регенерация Шао Кана прервана. Он получил двойной урон!");
+            }
+        } else {
+            enemy.setAttack(enemyAction);
+            combat.setPlayerTurn(isPlayerTurn);
+            if (isPlayerTurn == true) {
+                combat.processMove(human, enemy); //если очередь игрока то human = attacker, enemy = defender
+            } else {
+                combat.processMove(enemy, human);
+            }
+        }
+        if (enemy instanceof ShaoKahn && playerAction == 1) {
+            ((ShaoKahn) enemy).cumulateDamage(human.getDamage());
+        }
+        isPlayerTurn = !isPlayerTurn;
+    }
+
+    public boolean isPlayerTurn() {
         return this.isPlayerTurn;
     }
-    public boolean isBatlleOver(){
-        return this.battleOver;
-    }
-    public void processAction(Player human, Enemy enemy, int attackCode){
-        human.setAttack(attackCode);
-        playerStunned = false;
-        enemyStunned = false;
-        //логика перевыбора паттерна поведения
-        if (actionIndex > enemyPattern.length - 1){
-            actionIndex = 0;
-            enemyPattern = behaviorManager.getBehaviorFor(enemy);
-        }
-        enemy.setAttack(enemyPattern[actionIndex]);
-        actionIndex++;
-        
-        if(isPlayerTurn){
-            combat.processMove(human, enemy, isPlayerTurn);
-            isPlayerTurn = false;
-            
-        } else if(!isPlayerTurn){
-            combat.processMove(enemy, human, isPlayerTurn);
-            isPlayerTurn = true;
-        }
-        if(human.getHealth() <= 0 || enemy.getHealth() <= 0){
-            System.out.println("игра окончена");
-            this.battleOver = true;
-        }
-        for(int p: enemyPattern){
-            System.out.print(p + " ");
-        }
-        if(combat.isPlayerStunned()){
-            this.playerStunned = true;
-        } else if (combat.isEnemyStunned()){
-            this.enemyStunned = true;
-        }
-    }
-    
 
-    public boolean isPlayerStunned(){
-        return this.playerStunned;
+    public void setTurn(boolean isPlayerTurn) {
+        this.isPlayerTurn = isPlayerTurn;
     }
-    public boolean isEnemyStunned(){
-        return this.enemyStunned;
+
+    public boolean isPlayerStunned() {
+        return combat.isPlayerStunned();
     }
-    public Enemy getEnemy(){
-        return this.enemy;
+
+    public boolean isEnemyStunned() {
+        return combat.isEnemyStunned();
     }
-    public void setEnemy(Enemy enemy){
-        this.enemy = enemy;
+
+    public boolean isPlayerDebuffed() {
+        return combat.isPlayerDebuffed();
+    }
+
+    public boolean isEnemyDebuffed() {
+        return combat.isEnemyDebuffed();
     }
 }

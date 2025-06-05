@@ -5,6 +5,8 @@ import com.mycompany.lab5.model.Debuffer;
 import com.mycompany.lab5.model.Player;
 import com.mycompany.lab5.model.Enemy;
 import com.mycompany.lab5.enemy.ShaoKahn;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -14,6 +16,7 @@ public class GameEngine {
 
     private int locationNumber;
     private int currentLocationNumber = 1;
+    private int enemiesLeft;
     private final BattleEngine battleEngine;
     private final EnemyManager enemyManager;
     private final LevelManager levelManager = new LevelManager();
@@ -25,9 +28,12 @@ public class GameEngine {
     private boolean gameOver = false;
 
     public GameEngine(int locationNumber) {
+        System.out.println("Выбранное число локаций " + locationNumber);
+        this.locationNumber = locationNumber;
         enemyManager = new EnemyManager(locationNumber);
-        battleEngine = new BattleEngine();
         enemies = enemyManager.getEnemies();
+
+        battleEngine = new BattleEngine();
         battleEngine.setEnemy(enemies[0]);
     }
 
@@ -41,10 +47,15 @@ public class GameEngine {
         itemManager.addRandomItem();
         if (battleEngine.getEnemy() instanceof ShaoKahn) {
             levelManager.addBossExperience(player, enemies);
-            if (roundNumber == enemies.length) {
+            System.out.println("Номер раунда - " + roundNumber);
+            System.out.println("Количество врагов - " + enemies.length);
+            if ((roundNumber + 1) == enemies.length) {
                 gameOver = true;
+                return;
             } else {
                 currentLocationNumber++;
+//                enemyManager.setEnemiesForLocation(currentLocationNumber);
+
             }
         }
         levelManager.addExperience(player, enemies);
@@ -64,21 +75,50 @@ public class GameEngine {
     public void startNewRound(Player player) {
         reachedNewLevel = false;
         battleEngine.setTurn(false);
+        System.out.println("новый раунд под номером " + roundNumber);
+        System.out.println("длина массива enemies " + enemies.length);
+        for (Enemy e : enemies) {
+            if (e != null) {
+                System.out.println(e.getName());
+            } else {
+                System.out.println("Враг не создан");
+            }
+        }
+        System.out.println("Номер текущей локации " + currentLocationNumber);
         Enemy nextEnemy = enemies[roundNumber];
         battleEngine.setEnemy(nextEnemy);
         player.setFullHealth();
         nextEnemy.setFullHealth();
     }
 
-    public boolean isPlayerStunned(){
+    public void boostDamage(Player player) {
+        player.updateDamage((int) (player.getDamage() * 0.25));
+    }
+
+    public void boostMaxHealth(Player player) {
+        player.updateMaxHealth((int) (player.getMaxHealth() * 0.25));
+    }
+
+    public boolean isPlayerStunned() {
         return this.battleEngine.isPlayerStunned();
     }
-    public boolean isEnemyStunned(){
+
+    public boolean isEnemyStunned() {
         return this.battleEngine.isEnemyStunned();
     }
-    public boolean isPlayerTurn(){
-        return this.battleEngine.getPlayerTurn();
+
+    public boolean isPlayerDebuffed() {
+        return this.battleEngine.isPlayerDebuffed();
     }
+
+    public boolean isEnemyDebuffed() {
+        return this.battleEngine.isEnemyDebuffed();
+    }
+
+    public boolean isPlayerTurn() {
+        return this.battleEngine.isPlayerTurn();
+    }
+
     public int getLocationNumber() {
         return this.locationNumber;
     }
@@ -98,11 +138,11 @@ public class GameEngine {
     public BattleEngine getBattleEngine() {
         return this.battleEngine;
     }
-    
+
     public Enemy getFirstEnemy() {
         return this.enemies[0];
     }
-    
+
     public Enemy getNextEnemy() {
         return battleEngine.getEnemy();
     }
