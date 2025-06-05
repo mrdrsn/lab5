@@ -3,7 +3,8 @@ package com.mycompany.lab5.enemy;
 import com.mycompany.lab5.model.Enemy;
 
 /**
- *
+ *Класс {@code LiuKang} представляет собой врага "Ли Кан", наследующегося от класса
+ * {@code Enemy} и имеющего уникальные характеристики
  * @author Мария
  */
 public class LiuKang extends Enemy{

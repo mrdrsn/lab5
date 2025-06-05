@@ -1,11 +1,9 @@
 package com.mycompany.lab5.ui;
 
 import com.mycompany.lab5.RecordManager;
-import com.mycompany.lab5.battle.BattleEngine;
 import com.mycompany.lab5.battle.GameEngine;
 import com.mycompany.lab5.items.Item;
 import com.mycompany.lab5.items.ItemManager;
-import com.mycompany.lab5.model.Entity;
 import com.mycompany.lab5.model.Player;
 import com.mycompany.lab5.model.Enemy;
 import java.awt.BorderLayout;
@@ -33,10 +31,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import com.mycompany.lab5.ui.BackgroundPanel;
-import javax.swing.BoxLayout;
 
 /**
- *
+ *Класс {@code GUIDemo} представляет собой работу всего пользовательского интерфейса
  * @author nsoko
  */
 public class GUIDemo extends JFrame {
@@ -52,7 +49,6 @@ public class GUIDemo extends JFrame {
     private JButton defendButton = new JButton("Защититься"); //основные кнопки
     private JButton itemsButton = new JButton("Предметы"); //основные кнопки
     private JButton debuffButton = new JButton("Ослабить"); //основные кнопки
-    private JButton debugButton = new JButton("Кнопка бога");
 
     private JLabel playerNameLabel;
     private JLabel enemyNameLabel;
@@ -193,14 +189,6 @@ public class GUIDemo extends JFrame {
             updatePanelsAfterMove();
             updateInfoAfterMove(2, enemy.getAttack());
             applyDebuff();
-        });
-        debugButton.addActionListener((ActionEvent e) -> {
-            int normalDamage = human.getDamage();
-            human.setDamage(1000);
-            game.hit(human, enemy, 1);
-            human.setDamage(normalDamage);
-            updatePanelsAfterMove();
-            updateInfoAfterMove(1, enemy.getAttack());
         });
 
         gameFrame.add(topPanel, BorderLayout.NORTH);
@@ -612,10 +600,6 @@ public class GUIDemo extends JFrame {
 
     public JButton getDebuffButton() {
         return this.debuffButton;
-    }
-
-    public JButton getDebugButton() {
-        return this.debugButton;
     }
 
     public Player getHuman() {

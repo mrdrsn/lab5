@@ -5,7 +5,8 @@
 package com.mycompany.lab5.model;
 
 /**
- *
+ *Интерфейс {@code Boss} описывает дополнительный функционал
+ * врага-босса
  * @author nsoko
  */
 public interface Boss {

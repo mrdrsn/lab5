@@ -5,7 +5,7 @@
 package com.mycompany.lab5;
 
 /**
- *
+ *Класс {@code PlayerScoreEntry} является темплейтом для хранения результатов игроков
  * @author Nastya
  */
 public class PlayerScoreEntry {

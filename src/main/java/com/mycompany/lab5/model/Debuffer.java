@@ -5,7 +5,8 @@
 package com.mycompany.lab5.model;
 
 /**
- *
+ * *Интерфейс {@code Debuffer} описывает дополнительный функционал
+ * сущности-ослабителя
  * @author nsoko
  */
 public interface Debuffer {

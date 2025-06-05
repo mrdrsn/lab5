@@ -9,7 +9,13 @@ import com.mycompany.lab5.enemy.ShaoKahn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+/**
+ * Класс (@code EnemyBehaviorManager) отвечает за реализацию
+ * адаптивного поведения врагов. В зависимости от типа врага и 
+ * поведения игрока этот класс выдает различные паттерны поведения.
+ * 
+ * @author nsoko
+ */
 public class EnemyBehaviorManager {
 
     private final Random random = new Random();

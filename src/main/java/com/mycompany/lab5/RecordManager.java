@@ -5,11 +5,13 @@
 package com.mycompany.lab5;
 
 /**
- *
+ * Класс {@code RecordManager} служит для организации создания и заполнения Excel таблицы с результатами игроков.
+ * В пользовательском интерфейсе выводятся только топ-10 результатов
  * @author Nastya
  */
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,29 +33,32 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+
 public class RecordManager {
 
-    private static final String FILE_PATH = "src/main/resources/records.xlsx";
     private static final String SHEET_NAME = "Records";
+
+    // Путь внутри resources (внутри JAR)
+    private static final String RESOURCE_PATH = "/records.xlsx";
+
+    // Локальный путь для записи изменений
+    private static final String LOCAL_FILE_PATH = "records.xlsx";
 
     public RecordManager() {
         initialFillRecordsTable();
     }
 
     public void initialFillRecordsTable() {
-        File file = new File(FILE_PATH);
+        File file = new File(LOCAL_FILE_PATH);
 
         if (!file.exists()) {
-            // Создаём файл и заполняем массовкой
-            List<PlayerRecord> sampleData = new ArrayList<>();
-            Random random = new Random();
+            // Копируем шаблон из ресурсов
+            copyResourceToFile();
 
-            String[] names = {"Scorpion", "SubZero", "LiuKang", "Sonya", "Raiden", "Baraka", "Kitana", "Jax", "Kano", "ShaoKahn"};
-            for (String name : names) {
-                sampleData.add(new PlayerRecord(name, 90 + random.nextInt(21)));
+            // Если всё равно нет файла — создаём новый
+            if (!file.exists()) {
+                createNewFile(file);
             }
-
-            writeToFile(sampleData); // Это создаст файл и запишет данные
         }
     }
 
@@ -61,10 +66,8 @@ public class RecordManager {
         List<PlayerRecord> records = readFromFile();
         Collections.sort(records, Comparator.comparingInt(PlayerRecord::getScore).reversed());
 
-        // Берём топ-10
         List<PlayerRecord> top10 = records.subList(0, Math.min(records.size(), 10));
 
-        // Создаем модель таблицы
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("Имя");
         model.addColumn("Очки");
@@ -73,7 +76,6 @@ public class RecordManager {
             model.addRow(new Object[]{record.getName(), record.getScore()});
         }
 
-        // Создаем окно с таблицей
         JTable table = new JTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
 
@@ -95,11 +97,10 @@ public class RecordManager {
         writeToFile(records);
     }
 
-    // === Вспомогательные методы ===
     private List<PlayerRecord> readFromFile() {
         List<PlayerRecord> records = new ArrayList<>();
 
-        try (Workbook workbook = WorkbookFactory.create(new File(FILE_PATH))) {
+        try (Workbook workbook = WorkbookFactory.create(new File(LOCAL_FILE_PATH))) {
             Sheet sheet = workbook.getSheet(SHEET_NAME);
             if (sheet == null) {
                 return records;
@@ -119,35 +120,26 @@ public class RecordManager {
                 }
             }
         } catch (Exception e) {
-            // Если файл повреждён или не существует — создаём новый
-            createNewFile();
+            JOptionPane.showMessageDialog(null, "Ошибка чтения таблицы рекордов.");
+            createNewFile(new File(LOCAL_FILE_PATH));
             return new ArrayList<>(); // Возвращаем пустой список
         }
 
         return records;
     }
 
-    private void writeDefaultHeaders(Sheet sheet) {
-        Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("Имя");
-        headerRow.createCell(1).setCellValue("Очки");
-    }
-
     private void writeToFile(List<PlayerRecord> records) {
         Workbook workbook = null;
         try {
-            if (new File(FILE_PATH).exists()) {
-                // Открываем существующий файл
-                try (FileInputStream fis = new FileInputStream(FILE_PATH)) {
-                    workbook = WorkbookFactory.create(fis);
-                }
-            } else {
-                // Создаём новый
-                workbook = new XSSFWorkbook();
-                workbook.createSheet(SHEET_NAME);
+            // Читаем существующий файл
+            try (FileInputStream fis = new FileInputStream(LOCAL_FILE_PATH)) {
+                workbook = WorkbookFactory.create(fis);
             }
 
             Sheet sheet = workbook.getSheet(SHEET_NAME);
+            if (sheet == null) {
+                sheet = workbook.createSheet(SHEET_NAME);
+            }
 
             // Удаляем старые строки
             for (int i = sheet.getLastRowNum(); i >= 0; i--) {
@@ -170,37 +162,57 @@ public class RecordManager {
                 row.createCell(1).setCellValue(record.getScore());
             }
 
-            // Сохраняем и закрываем
-            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+            // Сохраняем
+            try (FileOutputStream fos = new FileOutputStream(LOCAL_FILE_PATH)) {
                 workbook.write(fos);
             }
-
-            // Закрываем workbook
-            workbook.close();
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Ошибка сохранения таблицы рекордов.");
-            try {
-                if (workbook != null) {
-                    workbook.close(); // Вторая попытка закрытия на случай, если не закрылся
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
         }
     }
 
-    private void createNewFile() {
+    private void copyResourceToFile() {
+        InputStream is = getClass().getResourceAsStream(RESOURCE_PATH);
+        if (is == null) {
+            System.err.println("Файл не найден в ресурсах: " + RESOURCE_PATH);
+            return;
+        }
+
+        try {
+            Workbook workbook = WorkbookFactory.create(is);
+            try (FileOutputStream fos = new FileOutputStream(LOCAL_FILE_PATH)) {
+                workbook.write(fos);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void createNewFile(File file) {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet(SHEET_NAME);
 
-        // Добавляем заголовки
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Имя");
         headerRow.createCell(1).setCellValue("Очки");
 
-        try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             workbook.write(fos);
         } catch (IOException e) {
             e.printStackTrace();
@@ -211,11 +223,19 @@ public class RecordManager {
                 e.printStackTrace();
             }
         }
+
+        // Заполняем начальными данными
+        Random random = new Random();
+        String[] names = {"Scorpion", "SubZero", "LiuKang", "Sonya", "Raiden", "Baraka", "Kitana", "Jax", "Kano", "ShaoKahn"};
+        List<PlayerRecord> sampleData = new ArrayList<>();
+        for (String name : names) {
+            sampleData.add(new PlayerRecord(name, 90 + random.nextInt(21)));
+        }
+        writeToFile(sampleData);
     }
 
     // === Вспомогательный класс ===
     private static class PlayerRecord {
-
         private final String name;
         private final int score;
 

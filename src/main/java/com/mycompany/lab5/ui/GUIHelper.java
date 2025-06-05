@@ -18,7 +18,8 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 
 /**
- *
+ *Класс {@code GUIHelper} является вспомогательным классом для создания
+ * панелей со сложными компонентами для разгрузки основного класса пользовательского интерфейса {@code GUIDemo}
  * @author Nastya
  */
 public class GUIHelper {
@@ -48,7 +49,6 @@ public class GUIHelper {
         bottomPanel.add(gui.getAttackButton());
         bottomPanel.add(gui.getDefendButton());
         bottomPanel.add(gui.getDebuffButton());
-        bottomPanel.add(gui.getDebugButton());
 
         return bottomPanel;
     }

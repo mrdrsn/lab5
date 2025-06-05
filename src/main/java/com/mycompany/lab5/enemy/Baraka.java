@@ -3,7 +3,8 @@ package com.mycompany.lab5.enemy;
 import com.mycompany.lab5.model.Enemy;
 
 /**
- *
+ *Класс {@code Baraka} представляет собой врага "Барака", наследующегося от класса
+ * {@code Enemy} и имеющего уникальные характеристики
  * @author Мария
  */
 public class Baraka extends Enemy{

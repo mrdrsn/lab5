@@ -4,10 +4,10 @@
  */
 package com.mycompany.lab5.model;
 
-import javax.swing.ImageIcon;
-
 /**
- *
+ * Класс {@code Entity} является общим классом для сущностей "игрок"
+ * и "враг". Представляет собой набор базовых характеристик и методов, присущих
+ * всем типам сущностей.
  * @author Мария
  */
 public class Entity {

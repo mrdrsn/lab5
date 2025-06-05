@@ -5,7 +5,9 @@
 package com.mycompany.lab5.items;
 
 /**
- *
+ *Класс {@code ItemManager} является обработчиком работы со
+ * вспомогательными предметами. Здесь реализованы действия "получить предмет",
+ * "использовать предмет", "проверить наличие предмета".
  * @author nsoko
  */
 import com.mycompany.lab5.model.Player;

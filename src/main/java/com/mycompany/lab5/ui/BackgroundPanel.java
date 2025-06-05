@@ -3,7 +3,11 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-
+/**
+ * Вспомогательный класс {@code BackgroundPanel} используется 
+ * для создания панелей с изображениями персонажей
+ * @author nsoko
+ */
 
 public class BackgroundPanel extends JPanel {
     

@@ -5,6 +5,9 @@ import com.mycompany.lab5.model.Entity;
 import com.mycompany.lab5.model.Player;
 
 /**
+ * Класс {@code LevelManager} является инструментом для обработки
+ * получения опыта и очков за победу над врагами, внутри него осуществляется
+ * переход игрока на следующий уровень
  *
  * @author nsoko
  */

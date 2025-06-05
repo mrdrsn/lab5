@@ -7,7 +7,9 @@ package com.mycompany.lab5.model;
 import com.mycompany.lab5.model.Enemy;
 
 /**
- *
+ *Класс {@code Player} является моделью описания игрока.
+ * Здесь введены дополнительные характеристики: опыт, очки, победы.
+ * Также сущность "игрок" может ослабить игрока, поэтому реализует интерфейс {@code Debuffer}
  * @author Мария
  */
 public class Player extends Entity implements Debuffer {
@@ -28,7 +30,6 @@ public class Player extends Entity implements Debuffer {
         this.nextExperience = 40;
         this.win = 0;
     }
-
 
 
     public int getPoints() {

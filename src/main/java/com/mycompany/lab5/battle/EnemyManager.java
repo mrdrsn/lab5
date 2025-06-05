@@ -15,7 +15,9 @@ import java.util.List;
 import javax.swing.JDialog;
 
 /**
- *
+ *Класс (@code EnemyManager) является инструментом по подбору
+ * врагов случайным образом в зависимости от выбранного количества локаций
+ * 
  * @author Мария
  */
 public class EnemyManager {

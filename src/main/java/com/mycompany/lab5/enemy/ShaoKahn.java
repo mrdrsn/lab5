@@ -4,7 +4,9 @@ import com.mycompany.lab5.model.Enemy;
 import com.mycompany.lab5.model.Boss;
 
 /**
- *
+ * Класс {@code ShaoKahn} представляет собой врага "Шао Кан", наследующегося от класса
+ * {@code Enemy} и имеющего уникальные характеристики. Этот враг также является боссом,
+ * поэтому он имеет уникальную механику регенерации, прописанную в интерфейсе {@code Boss})
  * @author Мария
  */
 public class ShaoKahn extends Enemy implements Boss {
