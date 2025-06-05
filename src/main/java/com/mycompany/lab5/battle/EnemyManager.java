@@ -51,23 +51,19 @@ public class EnemyManager {
 
         if (locationNumber >= 2) {
             // 6 обычных врагов + 1 Шао Кан на второй локации
-            for (int i = 0; i < 6 && index < enemies.length; i++) {
+            for (int i = 0; i < 4; i++) {
                 enemies[index++] = enemyFactories.get(i % enemyFactories.size()).createEnemy();
             }
-            if (index < enemies.length) {
-                enemies[index++] = new ShaoKahnFactory().createEnemy(); // индекс 7 или меньше
-            } else {
-                System.out.println("Ошибка: Нет места для нового Шао Кана!");
-            }
+            enemies[index++] = new ShaoKahnFactory().createEnemy();
         }
 
         if (locationNumber >= 3) {
             // 13 обычных врагов + 1 Шао Кан на третьей локации
-            for (int i = 0; i < 13 && index < enemies.length; i++) {
+            for (int i = 0; i < 6; i++) {
                 enemies[index++] = enemyFactories.get(i % enemyFactories.size()).createEnemy();
             }
             if (index < enemies.length) {
-                enemies[index] = new ShaoKahnFactory().createEnemy(); // индекс 14 или меньше
+                enemies[index++] = new ShaoKahnFactory().createEnemy(); // индекс 14 или меньше
             } else {
                 System.out.println("Ошибка: Нет места для Шао Кана на третьей локации");
             }

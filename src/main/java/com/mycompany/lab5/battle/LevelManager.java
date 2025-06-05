@@ -1,5 +1,6 @@
 package com.mycompany.lab5.battle;
 
+import com.mycompany.lab5.model.Enemy;
 import com.mycompany.lab5.model.Entity;
 import com.mycompany.lab5.model.Player;
 
@@ -63,15 +64,13 @@ public class LevelManager {
         checkLevelUp(human, enemies);
     }
 
-    public void checkLevelUp(Player human, Entity[] enemies) {
-        for (int i = 0; i < experience_for_next_level.length - 1; i++) {
-            if (experience_for_next_level[i] == human.getExperience()) {
-                reachedNewLevel = true;
-                human.setLevel();
-                human.setNextExperience(experience_for_next_level[i + 1]);
-                updatePlayerStats(human);
-                updateEnemiesStats(enemies, human);
-            }
+    public void checkLevelUp(Player human, Entity[] enemies){
+        if(human.getExperience() >= experience_for_next_level[human.getLevel()]){
+            reachedNewLevel = true;
+            human.setLevel();
+            human.setNextExperience(experience_for_next_level[human.getLevel()]);
+            updatePlayerStats(human);
+            updateEnemiesStats(enemies, human);
         }
     }
 

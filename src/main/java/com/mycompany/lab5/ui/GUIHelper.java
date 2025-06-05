@@ -137,7 +137,7 @@ public class GUIHelper {
         
         gui.setTurnPanel(new JPanel(new GridLayout(6, 1)));
         gui.getTurnPanel().setPreferredSize(new Dimension(300, 400));
-        gui.getTurnPanel().setBackground(Color.red);
+//        gui.getTurnPanel().setBackground(Color.red);
         JLabel playerAction = new JLabel("");
         JLabel enemyAction = new JLabel("");
         JLabel turn = new JLabel("Ход противника");
@@ -173,7 +173,7 @@ public class GUIHelper {
         locationCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
         gui.setLocationLabel(locationCountLabel);
 
-        blankPanel.setBackground(Color.cyan);
+//        blankPanel.setBackground(Color.cyan);
         blankPanel.setPreferredSize(new Dimension(300, 100));
         blankPanel.add(locationLabel);
         blankPanel.add(locationCountLabel);
